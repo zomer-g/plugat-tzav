@@ -37,8 +37,9 @@ yarn-error.log*
 # vercel
 .vercel
 
-# user data (JSON database)
+# user data (JSON database) — except seed data
 /data/
+!/data/events.json
 
 # typescript
 *.tsbuildinfo
