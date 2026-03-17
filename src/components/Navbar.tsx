@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import Image from "next/image";
+import Link from "next/link";
 
 const navLinks = [
   { href: "#about", label: "אודות" },
@@ -16,6 +18,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const { data: session } = useSession();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -86,6 +89,15 @@ export default function Navbar() {
               {link.label}
             </a>
           ))}
+
+          {/* Members area link */}
+          <Link
+            href={session ? "/members" : "/auth/signin"}
+            className="rounded-full border border-sand/30 px-4 py-2 text-sm font-medium text-sand transition-colors hover:border-sand hover:bg-sand/10"
+          >
+            {session ? "אזור אישי" : "התחברות"}
+          </Link>
+
           <a
             href={process.env.NEXT_PUBLIC_DONATION_URL || "#donate"}
             target="_blank"
@@ -142,6 +154,16 @@ export default function Navbar() {
                 {link.label}
               </a>
             ))}
+
+            {/* Members area link (mobile) */}
+            <Link
+              href={session ? "/members" : "/auth/signin"}
+              onClick={() => setMenuOpen(false)}
+              className="rounded-full border border-sand/30 px-6 py-3 text-lg font-medium text-sand transition-colors hover:border-sand hover:bg-sand/10"
+            >
+              {session ? "אזור אישי" : "התחברות"}
+            </Link>
+
             <a
               href={process.env.NEXT_PUBLIC_DONATION_URL || "#donate"}
               target="_blank"
