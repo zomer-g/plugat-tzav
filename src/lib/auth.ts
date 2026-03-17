@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
-import { getUserByEmail, createUser } from "@/lib/db";
+import { getUserByEmail, createUser, updateUser } from "@/lib/db";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -20,6 +20,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           name: user.name || "",
           image: user.image || "",
         });
+      } else {
+        // If ADMIN_EMAIL matches, ensure they are admin (handles data resets)
+        const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+        if (adminEmail && user.email.toLowerCase() === adminEmail && existing.role !== "admin") {
+          updateUser(existing.id, { role: "admin" });
+        }
+        // Ensure user is active on sign-in
+        if (!existing.active) {
+          updateUser(existing.id, { active: true });
+        }
       }
       return true;
     },
