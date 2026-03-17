@@ -150,7 +150,7 @@ export default function EventsDisplay() {
   // Group events by year for timeline
   const eventsByYear: Record<string, EventData[]> = {};
   filteredEvents
-    .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
+    .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
     .forEach((e) => {
       const year = new Date(e.startDate).getFullYear().toString();
       if (!eventsByYear[year]) eventsByYear[year] = [];

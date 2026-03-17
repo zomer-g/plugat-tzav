@@ -12,7 +12,7 @@ export async function GET() {
   }
 
   const events = getEvents();
-  // Sort by start date descending
-  events.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+  // Sort by start date ascending (chronological)
+  events.sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
   return NextResponse.json(events);
 }
