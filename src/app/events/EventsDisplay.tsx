@@ -64,51 +64,55 @@ export default function EventsDisplay() {
   );
   const eventsWithCoords = sortedEventsAsc.filter((e) => e.coordinates);
 
-  // Update marker opacity based on playback position
+  // Update marker visibility based on playback position
+  // Uses direct DOM style manipulation (not Leaflet setOpacity which doesn't animate)
   const updateMarkerOpacity = useCallback((currentIdx: number) => {
     markersRef.current.forEach((marker, eventId) => {
       const eventIndex = eventsWithCoords.findIndex((e) => e.id === eventId);
       if (eventIndex < 0) return;
 
-      // Use Leaflet's setOpacity for reliable opacity control
+      // Access the marker's DOM element directly
+      const el = (marker as unknown as { _icon?: HTMLElement })._icon;
+      const shadow = (marker as unknown as { _shadow?: HTMLElement })._shadow;
+
       if (currentIdx === -1) {
-        // Show all at full opacity
-        marker.setOpacity(1);
-        const el = (marker as unknown as { _icon?: HTMLElement })._icon;
+        // Show all mode — full opacity
         if (el) {
           el.style.transition = "opacity 0.6s ease, transform 0.4s ease";
+          el.style.opacity = "1";
           el.style.transform = "scale(1)";
         }
+        if (shadow) shadow.style.opacity = "1";
         return;
       }
 
       if (eventIndex === currentIdx) {
-        // Current event: full opacity with scale pulse
-        marker.setOpacity(1);
-        const el = (marker as unknown as { _icon?: HTMLElement })._icon;
+        // Current event: fade in with scale pulse
         if (el) {
           el.style.transition = "opacity 0.6s ease, transform 0.4s ease";
-          el.style.transform = "scale(1.4)";
+          el.style.opacity = "1";
+          el.style.transform = "scale(1.5)";
           setTimeout(() => {
-            if (el) el.style.transform = "scale(1)";
-          }, 500);
+            el.style.transform = "scale(1)";
+          }, 600);
         }
+        if (shadow) shadow.style.opacity = "1";
       } else if (eventIndex < currentIdx) {
         // Past events: 25% opacity
-        marker.setOpacity(0.25);
-        const el = (marker as unknown as { _icon?: HTMLElement })._icon;
         if (el) {
-          el.style.transition = "opacity 0.6s ease, transform 0.4s ease";
+          el.style.transition = "opacity 0.8s ease, transform 0.4s ease";
+          el.style.opacity = "0.25";
           el.style.transform = "scale(1)";
         }
+        if (shadow) shadow.style.opacity = "0.25";
       } else {
-        // Future events: hidden
-        marker.setOpacity(0);
-        const el = (marker as unknown as { _icon?: HTMLElement })._icon;
+        // Future events: completely hidden
         if (el) {
           el.style.transition = "opacity 0.3s ease";
-          el.style.transform = "scale(1)";
+          el.style.opacity = "0";
+          el.style.transform = "scale(0.5)";
         }
+        if (shadow) shadow.style.opacity = "0";
       }
     });
   }, [eventsWithCoords]);
@@ -192,15 +196,6 @@ export default function EventsDisplay() {
         marker.bindPopup(popupContent);
         marker.on("click", () => setSelectedEvent(event.id));
         markersRef.current.set(event.id, marker);
-
-        // If playback is active, apply initial opacity via CSS
-        // (setOpacity won't work until marker is rendered)
-        marker.on("add", () => {
-          const el = (marker as unknown as { _icon?: HTMLElement })._icon;
-          if (el) {
-            el.style.transition = "opacity 0.6s ease, transform 0.4s ease";
-          }
-        });
       });
 
       // Fit bounds
@@ -213,10 +208,12 @@ export default function EventsDisplay() {
 
       mapInstanceRef.current = map;
 
-      // Apply current playback state after markers are rendered
-      setTimeout(() => {
-        updateMarkerOpacity(playbackIndex);
-      }, 100);
+      // Apply current playback state after markers are rendered in DOM
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          updateMarkerOpacity(playbackIndex);
+        });
+      });
     });
 
     return () => {
