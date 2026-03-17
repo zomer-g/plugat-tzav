@@ -75,7 +75,7 @@ export default function Navbar() {
             alt="פלוגת צב"
             width={48}
             height={48}
-            className="rounded"
+            className="rounded mix-blend-lighten"
           />
           <span className="text-lg font-bold text-sand">פלוגת צב</span>
         </a>

@@ -11,7 +11,7 @@ export default function Footer() {
               alt="פלוגת צב"
               width={40}
               height={40}
-              className="rounded"
+              className="rounded mix-blend-lighten"
             />
             <span className="font-bold text-sand">פלוגת צב</span>
           </div>

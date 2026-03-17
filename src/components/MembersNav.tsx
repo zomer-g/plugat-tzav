@@ -45,7 +45,7 @@ export default function MembersNav({
             alt="פלוגת צב"
             width={40}
             height={40}
-            className="rounded"
+            className="rounded mix-blend-lighten"
           />
           <div>
             <span className="text-lg font-bold text-sand">אזור אישי</span>
