@@ -67,37 +67,48 @@ export default function EventsDisplay() {
   // Update marker opacity based on playback position
   const updateMarkerOpacity = useCallback((currentIdx: number) => {
     markersRef.current.forEach((marker, eventId) => {
-      const el = (marker as unknown as { _icon?: HTMLElement })._icon;
-      if (!el) return;
-
-      if (currentIdx === -1) {
-        // Show all at full opacity
-        el.style.opacity = "1";
-        el.style.transition = "opacity 0.6s ease";
-        return;
-      }
-
       const eventIndex = eventsWithCoords.findIndex((e) => e.id === eventId);
       if (eventIndex < 0) return;
 
-      if (eventIndex === currentIdx) {
-        // Current event: full opacity with scale animation
-        el.style.opacity = "1";
-        el.style.transition = "opacity 0.6s ease, transform 0.4s ease";
-        el.style.transform = "scale(1.3)";
-        setTimeout(() => {
+      // Use Leaflet's setOpacity for reliable opacity control
+      if (currentIdx === -1) {
+        // Show all at full opacity
+        marker.setOpacity(1);
+        const el = (marker as unknown as { _icon?: HTMLElement })._icon;
+        if (el) {
+          el.style.transition = "opacity 0.6s ease, transform 0.4s ease";
           el.style.transform = "scale(1)";
-        }, 400);
+        }
+        return;
+      }
+
+      if (eventIndex === currentIdx) {
+        // Current event: full opacity with scale pulse
+        marker.setOpacity(1);
+        const el = (marker as unknown as { _icon?: HTMLElement })._icon;
+        if (el) {
+          el.style.transition = "opacity 0.6s ease, transform 0.4s ease";
+          el.style.transform = "scale(1.4)";
+          setTimeout(() => {
+            if (el) el.style.transform = "scale(1)";
+          }, 500);
+        }
       } else if (eventIndex < currentIdx) {
-        // Past events: 25% opacity (75% transparent)
-        el.style.opacity = "0.25";
-        el.style.transition = "opacity 0.6s ease";
-        el.style.transform = "scale(1)";
+        // Past events: 25% opacity
+        marker.setOpacity(0.25);
+        const el = (marker as unknown as { _icon?: HTMLElement })._icon;
+        if (el) {
+          el.style.transition = "opacity 0.6s ease, transform 0.4s ease";
+          el.style.transform = "scale(1)";
+        }
       } else {
         // Future events: hidden
-        el.style.opacity = "0";
-        el.style.transition = "opacity 0.3s ease";
-        el.style.transform = "scale(1)";
+        marker.setOpacity(0);
+        const el = (marker as unknown as { _icon?: HTMLElement })._icon;
+        if (el) {
+          el.style.transition = "opacity 0.3s ease";
+          el.style.transform = "scale(1)";
+        }
       }
     });
   }, [eventsWithCoords]);
@@ -181,6 +192,15 @@ export default function EventsDisplay() {
         marker.bindPopup(popupContent);
         marker.on("click", () => setSelectedEvent(event.id));
         markersRef.current.set(event.id, marker);
+
+        // If playback is active, apply initial opacity via CSS
+        // (setOpacity won't work until marker is rendered)
+        marker.on("add", () => {
+          const el = (marker as unknown as { _icon?: HTMLElement })._icon;
+          if (el) {
+            el.style.transition = "opacity 0.6s ease, transform 0.4s ease";
+          }
+        });
       });
 
       // Fit bounds
@@ -193,8 +213,10 @@ export default function EventsDisplay() {
 
       mapInstanceRef.current = map;
 
-      // Apply current playback state
-      updateMarkerOpacity(playbackIndex);
+      // Apply current playback state after markers are rendered
+      setTimeout(() => {
+        updateMarkerOpacity(playbackIndex);
+      }, 100);
     });
 
     return () => {
