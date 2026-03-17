@@ -19,7 +19,7 @@ export default function Hero() {
             src="/logo.png"
             alt="סמל פלוגת צב"
             fill
-            className="object-contain drop-shadow-2xl mix-blend-lighten"
+            className="object-contain drop-shadow-2xl"
             priority
           />
         </div>

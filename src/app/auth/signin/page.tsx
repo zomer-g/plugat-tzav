@@ -16,7 +16,7 @@ export default async function SignInPage() {
         <img
           src="/logo.png"
           alt="פלוגת צב"
-          className="mx-auto mb-6 h-24 w-24 rounded-lg mix-blend-lighten"
+          className="mx-auto mb-6 h-24 w-24 rounded-lg"
         />
         <h1 className="mb-2 text-3xl font-bold text-sand">כניסה לאזור האישי</h1>
         <p className="mb-8 text-gray-400">

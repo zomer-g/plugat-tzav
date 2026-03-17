@@ -35,15 +35,26 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async session({ session }) {
       if (session.user?.email) {
-        const dbUser = getUserByEmail(session.user.email);
-        if (dbUser) {
-          /* eslint-disable @typescript-eslint/no-explicit-any */
-          (session.user as any).role = dbUser.role;
-          (session.user as any).groups = dbUser.groups;
-          (session.user as any).id = dbUser.id;
-          (session.user as any).active = dbUser.active;
-          /* eslint-enable @typescript-eslint/no-explicit-any */
+        let dbUser = getUserByEmail(session.user.email);
+        // Auto-recreate user if data was wiped (e.g. Render redeploy)
+        if (!dbUser) {
+          dbUser = createUser({
+            email: session.user.email,
+            name: session.user.name || "",
+            image: session.user.image || "",
+          });
         }
+        // Ensure ADMIN_EMAIL is always admin
+        const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+        if (adminEmail && session.user.email.toLowerCase() === adminEmail && dbUser.role !== "admin") {
+          dbUser = updateUser(dbUser.id, { role: "admin" }) || dbUser;
+        }
+        /* eslint-disable @typescript-eslint/no-explicit-any */
+        (session.user as any).role = dbUser.role;
+        (session.user as any).groups = dbUser.groups;
+        (session.user as any).id = dbUser.id;
+        (session.user as any).active = dbUser.active;
+        /* eslint-enable @typescript-eslint/no-explicit-any */
       }
       return session;
     },
