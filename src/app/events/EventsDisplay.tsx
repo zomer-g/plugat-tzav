@@ -115,10 +115,9 @@ export default function EventsDisplay() {
 
     let cancelled = false;
 
-    Promise.all([
-      import("leaflet"),
-      import("leaflet/dist/leaflet.css"),
-    ]).then(([leafletModule]) => {
+    import("leaflet").then((leafletModule) => {
+      // @ts-expect-error CSS import for side effects
+      import("leaflet/dist/leaflet.css").catch(() => {});
       const L = leafletModule.default;
       leafletRef.current = L;
 
