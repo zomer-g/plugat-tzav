@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import type L from "leaflet";
 
 interface EventData {
@@ -34,6 +34,13 @@ export default function EventsDisplay() {
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+  const leafletRef = useRef<typeof L | null>(null);
+  const markersRef = useRef<Map<string, L.Marker>>(new Map());
+
+  // Playback state
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [playbackIndex, setPlaybackIndex] = useState(-1); // -1 = show all
+  const playIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     fetch("/api/events")
@@ -46,6 +53,55 @@ export default function EventsDisplay() {
       .finally(() => setLoading(false));
   }, []);
 
+  const filteredEvents =
+    selectedType === "all"
+      ? events
+      : events.filter((e) => e.type === selectedType);
+
+  // Sort chronologically (oldest first) for map playback
+  const sortedEventsAsc = [...filteredEvents].sort(
+    (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+  );
+  const eventsWithCoords = sortedEventsAsc.filter((e) => e.coordinates);
+
+  // Update marker opacity based on playback position
+  const updateMarkerOpacity = useCallback((currentIdx: number) => {
+    markersRef.current.forEach((marker, eventId) => {
+      const el = (marker as unknown as { _icon?: HTMLElement })._icon;
+      if (!el) return;
+
+      if (currentIdx === -1) {
+        // Show all at full opacity
+        el.style.opacity = "1";
+        el.style.transition = "opacity 0.6s ease";
+        return;
+      }
+
+      const eventIndex = eventsWithCoords.findIndex((e) => e.id === eventId);
+      if (eventIndex < 0) return;
+
+      if (eventIndex === currentIdx) {
+        // Current event: full opacity with scale animation
+        el.style.opacity = "1";
+        el.style.transition = "opacity 0.6s ease, transform 0.4s ease";
+        el.style.transform = "scale(1.3)";
+        setTimeout(() => {
+          el.style.transform = "scale(1)";
+        }, 400);
+      } else if (eventIndex < currentIdx) {
+        // Past events: 25% opacity (75% transparent)
+        el.style.opacity = "0.25";
+        el.style.transition = "opacity 0.6s ease";
+        el.style.transform = "scale(1)";
+      } else {
+        // Future events: hidden
+        el.style.opacity = "0";
+        el.style.transition = "opacity 0.3s ease";
+        el.style.transform = "scale(1)";
+      }
+    });
+  }, [eventsWithCoords]);
+
   // Map initialization
   useEffect(() => {
     if (view !== "map" || !mapRef.current || events.length === 0) return;
@@ -55,25 +111,19 @@ export default function EventsDisplay() {
       mapInstanceRef.current.remove();
       mapInstanceRef.current = null;
     }
+    markersRef.current.clear();
 
     let cancelled = false;
 
-    // Dynamic import of leaflet (requires window)
     Promise.all([
       import("leaflet"),
       import("leaflet/dist/leaflet.css"),
     ]).then(([leafletModule]) => {
       const L = leafletModule.default;
+      leafletRef.current = L;
 
       if (cancelled || !mapRef.current) return;
 
-      const filtered =
-        selectedType === "all"
-          ? events
-          : events.filter((e) => e.type === selectedType);
-      const withCoords = filtered.filter((e) => e.coordinates);
-
-      // Center on Israel
       const map = L.map(mapRef.current, {
         center: [31.5, 34.8],
         zoom: 8,
@@ -85,8 +135,8 @@ export default function EventsDisplay() {
         maxZoom: 18,
       }).addTo(map);
 
-      // Add markers
-      withCoords.forEach((event) => {
+      // Add all markers
+      eventsWithCoords.forEach((event) => {
         if (!event.coordinates) return;
         const typeInfo = TYPE_INFO[event.type] || TYPE_INFO.training;
 
@@ -130,21 +180,22 @@ export default function EventsDisplay() {
         `;
 
         marker.bindPopup(popupContent);
-
-        marker.on("click", () => {
-          setSelectedEvent(event.id);
-        });
+        marker.on("click", () => setSelectedEvent(event.id));
+        markersRef.current.set(event.id, marker);
       });
 
-      // Fit bounds if we have markers
-      if (withCoords.length > 0) {
+      // Fit bounds
+      if (eventsWithCoords.length > 0) {
         const bounds = L.latLngBounds(
-          withCoords.map((e) => [e.coordinates!.lat, e.coordinates!.lng])
+          eventsWithCoords.map((e) => [e.coordinates!.lat, e.coordinates!.lng])
         );
         map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
       }
 
       mapInstanceRef.current = map;
+
+      // Apply current playback state
+      updateMarkerOpacity(playbackIndex);
     });
 
     return () => {
@@ -153,24 +204,78 @@ export default function EventsDisplay() {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
+      markersRef.current.clear();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [view, events, selectedType]);
 
-  const filteredEvents =
-    selectedType === "all"
-      ? events
-      : events.filter((e) => e.type === selectedType);
+  // Update markers when playback index changes
+  useEffect(() => {
+    updateMarkerOpacity(playbackIndex);
 
-  // Group events by year for timeline
+    // Pan to current event
+    if (playbackIndex >= 0 && playbackIndex < eventsWithCoords.length) {
+      const event = eventsWithCoords[playbackIndex];
+      if (event.coordinates && mapInstanceRef.current) {
+        mapInstanceRef.current.panTo(
+          [event.coordinates.lat, event.coordinates.lng],
+          { animate: true, duration: 0.5 }
+        );
+      }
+    }
+  }, [playbackIndex, updateMarkerOpacity, eventsWithCoords]);
+
+  // Playback interval
+  useEffect(() => {
+    if (isPlaying) {
+      playIntervalRef.current = setInterval(() => {
+        setPlaybackIndex((prev) => {
+          const next = prev + 1;
+          if (next >= eventsWithCoords.length) {
+            setIsPlaying(false);
+            return prev;
+          }
+          return next;
+        });
+      }, 2000);
+    }
+    return () => {
+      if (playIntervalRef.current) clearInterval(playIntervalRef.current);
+    };
+  }, [isPlaying, eventsWithCoords.length]);
+
+  const startPlayback = () => {
+    setPlaybackIndex(0);
+    setIsPlaying(true);
+  };
+
+  const stopPlayback = () => {
+    setIsPlaying(false);
+    setPlaybackIndex(-1);
+  };
+
+  const togglePlayPause = () => {
+    if (isPlaying) {
+      setIsPlaying(false);
+    } else if (playbackIndex === -1 || playbackIndex >= eventsWithCoords.length - 1) {
+      startPlayback();
+    } else {
+      setIsPlaying(true);
+    }
+  };
+
+  // Group events by year for timeline (newest first)
   const eventsByYear: Record<string, EventData[]> = {};
-  filteredEvents
-    .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
+  [...filteredEvents]
+    .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
     .forEach((e) => {
       const year = new Date(e.startDate).getFullYear().toString();
       if (!eventsByYear[year]) eventsByYear[year] = [];
       eventsByYear[year].push(e);
     });
+
+  // Sort year keys descending
+  const sortedYears = Object.keys(eventsByYear).sort((a, b) => Number(b) - Number(a));
 
   if (loading) {
     return (
@@ -190,6 +295,11 @@ export default function EventsDisplay() {
       </div>
     );
   }
+
+  const currentPlaybackEvent =
+    playbackIndex >= 0 && playbackIndex < eventsWithCoords.length
+      ? eventsWithCoords[playbackIndex]
+      : null;
 
   return (
     <div className="space-y-6">
@@ -229,7 +339,7 @@ export default function EventsDisplay() {
         {/* View toggle */}
         <div className="flex rounded-xl bg-dark-card p-1">
           <button
-            onClick={() => setView("timeline")}
+            onClick={() => { setView("timeline"); stopPlayback(); }}
             className={`rounded-lg px-4 py-2 text-sm font-bold transition-colors ${
               view === "timeline"
                 ? "bg-olive text-white"
@@ -259,6 +369,107 @@ export default function EventsDisplay() {
             className="h-[500px] w-full rounded-xl border border-dark-surface overflow-hidden"
             style={{ zIndex: 0 }}
           />
+
+          {/* Playback controls */}
+          {eventsWithCoords.length > 0 && (
+            <div className="rounded-xl bg-dark-card p-4 space-y-3">
+              <div className="flex items-center gap-3">
+                {/* Play/Pause button */}
+                <button
+                  onClick={togglePlayPause}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-olive text-white transition-colors hover:bg-olive-light"
+                  aria-label={isPlaying ? "השהה" : "הפעל"}
+                >
+                  {isPlaying ? (
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                      <rect x="3" y="2" width="4" height="12" rx="1" />
+                      <rect x="9" y="2" width="4" height="12" rx="1" />
+                    </svg>
+                  ) : (
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M4 2l10 6-10 6V2z" />
+                    </svg>
+                  )}
+                </button>
+
+                {/* Stop button */}
+                {playbackIndex >= 0 && (
+                  <button
+                    onClick={stopPlayback}
+                    className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-dark-surface text-gray-400 transition-colors hover:text-white"
+                    aria-label="עצור"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
+                      <rect x="2" y="2" width="10" height="10" rx="1" />
+                    </svg>
+                  </button>
+                )}
+
+                {/* Timeline slider */}
+                <div className="flex-1 relative">
+                  <input
+                    type="range"
+                    min={-1}
+                    max={eventsWithCoords.length - 1}
+                    value={playbackIndex}
+                    onChange={(e) => {
+                      setIsPlaying(false);
+                      setPlaybackIndex(Number(e.target.value));
+                    }}
+                    className="w-full accent-olive cursor-pointer"
+                    dir="ltr"
+                  />
+                  {/* Year markers on slider */}
+                  <div className="flex justify-between text-[10px] text-gray-500 mt-1 px-1" dir="ltr">
+                    {eventsWithCoords.length > 0 && (
+                      <>
+                        <span>{new Date(eventsWithCoords[0].startDate).getFullYear()}</span>
+                        <span>{new Date(eventsWithCoords[eventsWithCoords.length - 1].startDate).getFullYear()}</span>
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {/* Event counter */}
+                <span className="text-sm text-gray-400 shrink-0 min-w-[60px] text-center">
+                  {playbackIndex >= 0
+                    ? `${playbackIndex + 1} / ${eventsWithCoords.length}`
+                    : `${eventsWithCoords.length}`}
+                </span>
+              </div>
+
+              {/* Current event info */}
+              {currentPlaybackEvent && (
+                <div className="flex items-center gap-3 rounded-lg bg-dark-surface/50 p-3 transition-all">
+                  <div
+                    className="h-8 w-8 shrink-0 rounded-full flex items-center justify-center text-sm"
+                    style={{ background: TYPE_INFO[currentPlaybackEvent.type]?.markerColor || "#666" }}
+                  >
+                    {TYPE_INFO[currentPlaybackEvent.type]?.icon}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-bold text-gray-200 truncate">
+                      {currentPlaybackEvent.title}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      {new Date(currentPlaybackEvent.startDate).toLocaleDateString("he-IL")} — {currentPlaybackEvent.location}
+                    </div>
+                  </div>
+                  {currentPlaybackEvent.albumUrl && (
+                    <a
+                      href={currentPlaybackEvent.albumUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0 text-sm text-olive-light hover:underline"
+                    >
+                      📸
+                    </a>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {filteredEvents.filter((e) => !e.coordinates).length > 0 && (
             <p className="text-sm text-gray-500 text-center">
               {filteredEvents.filter((e) => !e.coordinates).length} אירועים ללא קואורדינטות לא מוצגים במפה
@@ -267,19 +478,19 @@ export default function EventsDisplay() {
         </div>
       )}
 
-      {/* Timeline view */}
+      {/* Timeline view — newest first */}
       {view === "timeline" && (
         <div className="space-y-8">
-          {Object.keys(eventsByYear).length === 0 ? (
+          {sortedYears.length === 0 ? (
             <div className="rounded-xl bg-dark-card p-12 text-center text-gray-500">
               אין אירועים להצגה
             </div>
           ) : (
-            Object.entries(eventsByYear).map(([year, yearEvents]) => (
+            sortedYears.map((year) => (
               <div key={year}>
                 <h3 className="mb-4 text-2xl font-bold text-sand">{year}</h3>
                 <div className="relative border-r-2 border-olive/40 pr-8 space-y-6">
-                  {yearEvents.map((event) => {
+                  {eventsByYear[year].map((event) => {
                     const typeInfo = TYPE_INFO[event.type] || TYPE_INFO.training;
                     const isSelected = selectedEvent === event.id;
                     return (
