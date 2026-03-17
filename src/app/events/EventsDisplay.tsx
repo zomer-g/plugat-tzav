@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import type L from "leaflet";
 
 interface EventData {
   id: string;
@@ -57,83 +56,99 @@ export default function EventsDisplay() {
       mapInstanceRef.current = null;
     }
 
-    const filtered = filteredEvents;
-    const withCoords = filtered.filter((e) => e.coordinates);
+    let cancelled = false;
 
-    // Center on Israel
-    const map = L.map(mapRef.current, {
-      center: [31.5, 34.8],
-      zoom: 8,
-      scrollWheelZoom: true,
-    });
+    // Dynamic import of leaflet (requires window)
+    Promise.all([
+      import("leaflet"),
+      import("leaflet/dist/leaflet.css"),
+    ]).then(([leafletModule]) => {
+      const L = leafletModule.default;
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 18,
-    }).addTo(map);
+      if (cancelled || !mapRef.current) return;
 
-    // Add markers
-    withCoords.forEach((event) => {
-      if (!event.coordinates) return;
-      const typeInfo = TYPE_INFO[event.type] || TYPE_INFO.training;
+      const filtered =
+        selectedType === "all"
+          ? events
+          : events.filter((e) => e.type === selectedType);
+      const withCoords = filtered.filter((e) => e.coordinates);
 
-      const markerIcon = L.divIcon({
-        className: "custom-marker",
-        html: `<div style="
-          background: ${typeInfo.markerColor};
-          width: 32px; height: 32px;
-          border-radius: 50%;
-          display: flex; align-items: center; justify-content: center;
-          font-size: 16px;
-          border: 3px solid white;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.4);
-        ">${typeInfo.icon}</div>`,
-        iconSize: [32, 32],
-        iconAnchor: [16, 16],
+      // Center on Israel
+      const map = L.map(mapRef.current, {
+        center: [31.5, 34.8],
+        zoom: 8,
+        scrollWheelZoom: true,
       });
 
-      const marker = L.marker([event.coordinates.lat, event.coordinates.lng], {
-        icon: markerIcon,
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 18,
       }).addTo(map);
 
-      const dateStr = new Date(event.startDate).toLocaleDateString("he-IL");
-      const popupContent = `
-        <div dir="rtl" style="font-family: Heebo, sans-serif; min-width: 200px;">
-          <h3 style="margin: 0 0 4px; font-size: 16px; font-weight: bold;">${event.title}</h3>
-          <p style="margin: 0 0 4px; color: #666; font-size: 13px;">📍 ${event.location}</p>
-          <p style="margin: 0 0 4px; color: #666; font-size: 13px;">📅 ${dateStr}</p>
-          <span style="
-            display: inline-block;
-            background: ${typeInfo.markerColor}22;
-            color: ${typeInfo.markerColor};
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-          ">${typeInfo.icon} ${typeInfo.label}</span>
-          ${event.description ? `<p style="margin: 8px 0 4px; font-size: 13px;">${event.description.slice(0, 100)}${event.description.length > 100 ? "..." : ""}</p>` : ""}
-          ${event.albumUrl ? `<a href="${event.albumUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-top: 6px; color: #556B2F; font-size: 13px; text-decoration: underline;">📸 לאלבום תמונות</a>` : ""}
-        </div>
-      `;
+      // Add markers
+      withCoords.forEach((event) => {
+        if (!event.coordinates) return;
+        const typeInfo = TYPE_INFO[event.type] || TYPE_INFO.training;
 
-      marker.bindPopup(popupContent);
+        const markerIcon = L.divIcon({
+          className: "custom-marker",
+          html: `<div style="
+            background: ${typeInfo.markerColor};
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px;
+            border: 3px solid white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+          ">${typeInfo.icon}</div>`,
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
+        });
 
-      marker.on("click", () => {
-        setSelectedEvent(event.id);
+        const marker = L.marker([event.coordinates.lat, event.coordinates.lng], {
+          icon: markerIcon,
+        }).addTo(map);
+
+        const dateStr = new Date(event.startDate).toLocaleDateString("he-IL");
+        const popupContent = `
+          <div dir="rtl" style="font-family: Heebo, sans-serif; min-width: 200px;">
+            <h3 style="margin: 0 0 4px; font-size: 16px; font-weight: bold;">${event.title}</h3>
+            <p style="margin: 0 0 4px; color: #666; font-size: 13px;">📍 ${event.location}</p>
+            <p style="margin: 0 0 4px; color: #666; font-size: 13px;">📅 ${dateStr}</p>
+            <span style="
+              display: inline-block;
+              background: ${typeInfo.markerColor}22;
+              color: ${typeInfo.markerColor};
+              padding: 2px 8px;
+              border-radius: 12px;
+              font-size: 12px;
+              font-weight: bold;
+            ">${typeInfo.icon} ${typeInfo.label}</span>
+            ${event.description ? `<p style="margin: 8px 0 4px; font-size: 13px;">${event.description.slice(0, 100)}${event.description.length > 100 ? "..." : ""}</p>` : ""}
+            ${event.albumUrl ? `<a href="${event.albumUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; margin-top: 6px; color: #556B2F; font-size: 13px; text-decoration: underline;">📸 לאלבום תמונות</a>` : ""}
+          </div>
+        `;
+
+        marker.bindPopup(popupContent);
+
+        marker.on("click", () => {
+          setSelectedEvent(event.id);
+        });
       });
+
+      // Fit bounds if we have markers
+      if (withCoords.length > 0) {
+        const bounds = L.latLngBounds(
+          withCoords.map((e) => [e.coordinates!.lat, e.coordinates!.lng])
+        );
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
+      }
+
+      mapInstanceRef.current = map;
     });
 
-    // Fit bounds if we have markers
-    if (withCoords.length > 0) {
-      const bounds = L.latLngBounds(
-        withCoords.map((e) => [e.coordinates!.lat, e.coordinates!.lng])
-      );
-      map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
-    }
-
-    mapInstanceRef.current = map;
-
     return () => {
+      cancelled = true;
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
