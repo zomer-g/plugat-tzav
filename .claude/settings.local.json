@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --yes)",
+      "Read(//c/Users/zomer/CLAUDE CODE/**)",
+      "Bash(npx create-next-app@latest tzav-temp --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --yes)",
+      "Bash(cp -r \"/c/Users/zomer/CLAUDE CODE/tzav-temp/\"* \"/c/Users/zomer/CLAUDE CODE/tzav/\")",
+      "Bash(cp -r \"/c/Users/zomer/CLAUDE CODE/tzav-temp/\".* \"/c/Users/zomer/CLAUDE CODE/tzav/\")",
+      "Bash(rm -rf \"/c/Users/zomer/CLAUDE CODE/tzav-temp\")",
+      "Bash(rm -rf tzav/node_modules)",
+      "Bash(for f:*)",
+      "Bash(do cp:*)",
+      "Bash(done)",
+      "Bash(cp -r tzav-temp/src tzav/)",
+      "Bash(cp -r tzav-temp/public tzav/)",
+      "Bash(rm -rf tzav-temp)",
+      "Bash(npm install:*)",
+      "Bash(node -e \":*)",
+      "Bash(npm run:*)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(gh auth:*)"
+    ]
+  }
+}

@@ -1,0 +1,66 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme inline {
+  --color-olive: #556B2F;
+  --color-olive-light: #8DB63C;
+  --color-olive-dark: #3B4A1F;
+  --color-sand: #D4C89A;
+  --color-sand-light: #E0D6B0;
+  --color-sand-dark: #A89860;
+  --color-slate-mil: #708090;
+  --color-slate-mil-light: #8899A6;
+  --color-slate-mil-dark: #4A5568;
+  --color-dark-bg: #1A1A2E;
+  --color-dark-surface: #16213E;
+  --color-dark-card: #1E2A45;
+  --font-sans: var(--font-heebo);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-dark-bg);
+  color: #ededed;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+/* Focus indicators — WCAG 2.4.12 AAA */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 3px solid var(--color-sand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Reduced motion — WCAG 2.3.3 AAA */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Markdown prose RTL overrides */
+.prose-rtl blockquote {
+  border-right-width: 4px;
+  border-left-width: 0;
+  padding-right: 1em;
+  padding-left: 0;
+}
+
+.prose-rtl ul,
+.prose-rtl ol {
+  padding-right: 1.625em;
+  padding-left: 0;
+}
