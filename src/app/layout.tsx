@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Heebo } from "next/font/google";
 import SessionProvider from "@/components/SessionProvider";
+import ActivityLogger from "@/components/ActivityLogger";
 import "./globals.css";
 
 const heebo = Heebo({
@@ -46,7 +47,10 @@ export default function RootLayout({
   return (
     <html lang="he" dir="rtl" className={heebo.variable}>
       <body className="antialiased">
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider>
+          <ActivityLogger />
+          {children}
+        </SessionProvider>
       </body>
     </html>
   );

@@ -19,7 +19,13 @@
       "Bash(node -e \":*)",
       "Bash(npm run:*)",
       "mcp__Claude_Preview__preview_start",
-      "Bash(gh auth:*)"
+      "Bash(gh auth:*)",
+      "Bash(gh repo:*)",
+      "Bash(npx next:*)",
+      "Bash(ren \"logo.png.png\" \"logo.png\")",
+      "Bash(ren \"logo-small.png.png\" \"logo-small.png\")",
+      "Bash(mv \"logo.png.png\" \"logo.png\")",
+      "Bash(mv \"logo-small.png.png\" \"logo-small.png\")"
     ]
   }
 }

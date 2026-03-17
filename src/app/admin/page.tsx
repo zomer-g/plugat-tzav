@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getUsers, getGroups, getPageAccess } from "@/lib/db";
+import { getUsers, getGroups, getPageAccess, getEvents, getActivityLogs } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -7,6 +7,8 @@ export default async function AdminDashboard() {
   const users = getUsers();
   const groups = getGroups();
   const pages = getPageAccess();
+  const events = getEvents();
+  const logs = getActivityLogs();
 
   const stats = [
     {
@@ -29,6 +31,20 @@ export default async function AdminDashboard() {
       icon: "📄",
       href: "/admin/pages",
       color: "slate-mil",
+    },
+    {
+      label: "אירועים",
+      value: events.length,
+      icon: "📅",
+      href: "/admin/events",
+      color: "olive",
+    },
+    {
+      label: "רשומות יומן",
+      value: logs.length,
+      icon: "📊",
+      href: "/admin/logs",
+      color: "sand",
     },
     {
       label: "מנהלים",
@@ -90,6 +106,24 @@ export default async function AdminDashboard() {
           <h2 className="mb-2 text-xl font-bold text-sand">📄 הרשאות דפים</h2>
           <p className="text-sm text-gray-400">
             הגדרת רמת גישה לכל דף — פתוח, חברים בלבד, או קבוצות ספציפיות.
+          </p>
+        </Link>
+        <Link
+          href="/admin/events"
+          className="rounded-xl border border-dark-surface bg-dark-card p-6 transition-all hover:border-olive hover:shadow-lg"
+        >
+          <h2 className="mb-2 text-xl font-bold text-sand">📅 ניהול אירועים</h2>
+          <p className="text-sm text-gray-400">
+            הוספה ועריכה של אירועים, אימונים ופעילויות — כולל מיקום על המפה.
+          </p>
+        </Link>
+        <Link
+          href="/admin/logs"
+          className="rounded-xl border border-dark-surface bg-dark-card p-6 transition-all hover:border-sand hover:shadow-lg"
+        >
+          <h2 className="mb-2 text-xl font-bold text-sand">📊 יומן פעילות</h2>
+          <p className="text-sm text-gray-400">
+            מעקב אחר כל הדפים שכל משתמש ביקר בהם — סטטיסטיקות וסינון.
           </p>
         </Link>
       </div>

@@ -33,6 +33,31 @@ export interface DbGroup {
   createdAt: string;
 }
 
+export type EventType = "training" | "operational" | "social" | "uniform";
+
+export interface DbEvent {
+  id: string;
+  title: string;
+  type: EventType;
+  startDate: string;
+  endDate?: string;
+  location: string;
+  coordinates?: { lat: number; lng: number };
+  description?: string;
+  albumUrl?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ActivityLog {
+  id: string;
+  userId: string;
+  userEmail: string;
+  userName: string;
+  page: string;
+  timestamp: string;
+}
+
 export type PageAccessLevel = "public" | "members" | "groups";
 
 export interface PageAccess {
@@ -106,6 +131,18 @@ const DEFAULT_PAGE_ACCESS: PageAccess[] = [
   {
     pageId: "members/gallery",
     label: "גלריה פנימית",
+    level: "members",
+    allowedGroups: [],
+  },
+  {
+    pageId: "events",
+    label: "אירועי הפלוגה — תצוגה",
+    level: "public",
+    allowedGroups: [],
+  },
+  {
+    pageId: "admin/events",
+    label: "ניהול אירועים",
     level: "members",
     allowedGroups: [],
   },
@@ -306,4 +343,73 @@ export function canUserAccessPage(
   }
 
   return false;
+}
+
+// ─── Events ──────────────────────────────────────────────────────────────
+
+export function getEvents(): DbEvent[] {
+  return readJson<DbEvent[]>("events.json", []);
+}
+
+export function getEventById(id: string): DbEvent | undefined {
+  return getEvents().find((e) => e.id === id);
+}
+
+export function createEvent(data: Omit<DbEvent, "id" | "createdAt" | "updatedAt">): DbEvent {
+  const events = getEvents();
+  const event: DbEvent = {
+    ...data,
+    id: crypto.randomUUID(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  events.push(event);
+  writeJson("events.json", events);
+  return event;
+}
+
+export function updateEvent(
+  id: string,
+  updates: Partial<Omit<DbEvent, "id" | "createdAt">>
+): DbEvent | null {
+  const events = getEvents();
+  const idx = events.findIndex((e) => e.id === id);
+  if (idx === -1) return null;
+  events[idx] = { ...events[idx], ...updates, updatedAt: new Date().toISOString() };
+  writeJson("events.json", events);
+  return events[idx];
+}
+
+export function deleteEvent(id: string): boolean {
+  const events = getEvents();
+  const filtered = events.filter((e) => e.id !== id);
+  if (filtered.length === events.length) return false;
+  writeJson("events.json", filtered);
+  return true;
+}
+
+// ─── Activity Log ────────────────────────────────────────────────────────
+
+export function getActivityLogs(): ActivityLog[] {
+  return readJson<ActivityLog[]>("activity-log.json", []);
+}
+
+export function logActivity(data: { userId: string; userEmail: string; userName: string; page: string }): void {
+  const logs = getActivityLogs();
+  logs.push({
+    id: crypto.randomUUID(),
+    ...data,
+    timestamp: new Date().toISOString(),
+  });
+  // Keep last 10000 entries to prevent unlimited growth
+  const trimmed = logs.slice(-10000);
+  writeJson("activity-log.json", trimmed);
+}
+
+export function getActivityLogsByUser(userId: string): ActivityLog[] {
+  return getActivityLogs().filter((l) => l.userId === userId);
+}
+
+export function clearActivityLogs(): void {
+  writeJson("activity-log.json", []);
 }

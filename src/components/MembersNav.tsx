@@ -73,6 +73,12 @@ export default function MembersNav({
           >
             גלריה
           </Link>
+          <Link
+            href="/events"
+            className="rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-dark-surface hover:text-sand"
+          >
+            אירועים
+          </Link>
           {userRole === "admin" && (
             <Link
               href="/admin"
@@ -195,6 +201,13 @@ export default function MembersNav({
               className="w-full rounded-lg px-4 py-3 text-center text-gray-300 transition-colors hover:bg-dark-surface hover:text-sand"
             >
               גלריה
+            </Link>
+            <Link
+              href="/events"
+              onClick={() => setMenuOpen(false)}
+              className="w-full rounded-lg px-4 py-3 text-center text-gray-300 transition-colors hover:bg-dark-surface hover:text-sand"
+            >
+              אירועים
             </Link>
             {userRole === "admin" && (
               <Link
