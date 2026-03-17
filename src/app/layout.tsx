@@ -12,6 +12,14 @@ export const metadata: Metadata = {
   title: "פלוגת צב | Plugat Tzav",
   description:
     "פלוגת צב — ביחד, תמיד מוכנים. אתר הפלוגה הרשמי לעדכונים, גלריה ותרומות.",
+  icons: {
+    icon: [
+      { url: "/logo-small.png", sizes: "any" },
+    ],
+    apple: [
+      { url: "/logo-small.png", sizes: "180x180" },
+    ],
+  },
   openGraph: {
     title: "פלוגת צב | Plugat Tzav",
     description:
@@ -19,6 +27,14 @@ export const metadata: Metadata = {
     type: "website",
     locale: "he_IL",
     url: process.env.NEXT_PUBLIC_SITE_URL || "https://plugat-tzav.onrender.com",
+    images: [
+      {
+        url: "/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "פלוגת צב - Plugat Tzav",
+      },
+    ],
   },
 };
 
