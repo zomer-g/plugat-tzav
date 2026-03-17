@@ -64,55 +64,49 @@ export default function EventsDisplay() {
   );
   const eventsWithCoords = sortedEventsAsc.filter((e) => e.coordinates);
 
-  // Update marker visibility based on playback position
-  // Uses direct DOM style manipulation (not Leaflet setOpacity which doesn't animate)
-  const updateMarkerOpacity = useCallback((currentIdx: number) => {
-    markersRef.current.forEach((marker, eventId) => {
-      const eventIndex = eventsWithCoords.findIndex((e) => e.id === eventId);
-      if (eventIndex < 0) return;
+  // Inject CSS classes for marker visibility (CSS !important overrides Leaflet animations)
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const styleId = "marker-playback-styles";
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement("style");
+      style.id = styleId;
+      style.textContent = `
+        .leaflet-marker-icon.marker-hidden { opacity: 0 !important; transform: scale(0.5); }
+        .leaflet-marker-icon.marker-dim { opacity: 0.25 !important; transition: opacity 0.6s ease !important; }
+        .leaflet-marker-icon.marker-active { opacity: 1 !important; transition: opacity 0.6s ease !important; }
+        .leaflet-marker-icon.marker-pulse { opacity: 1 !important; animation: marker-pulse-anim 0.6s ease-out !important; }
+        @keyframes marker-pulse-anim {
+          0% { transform: scale(1.6); }
+          100% { transform: scale(1); }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }, []);
 
-      // Access the marker's DOM element directly
-      const el = (marker as unknown as { _icon?: HTMLElement })._icon;
-      const shadow = (marker as unknown as { _shadow?: HTMLElement })._shadow;
+  // Update marker visibility based on playback position using CSS classes
+  const updateMarkerOpacity = useCallback((currentIdx: number) => {
+    if (!mapRef.current) return;
+
+    eventsWithCoords.forEach((event, eventIndex) => {
+      const el = mapRef.current?.querySelector(`[data-marker-id="${event.id}"]`) as HTMLElement | null;
+      if (!el) return;
+
+      const wrapper = el.closest(".leaflet-marker-icon") as HTMLElement | null;
+      if (!wrapper) return;
+
+      // Remove all state classes
+      wrapper.classList.remove("marker-hidden", "marker-dim", "marker-active", "marker-pulse");
 
       if (currentIdx === -1) {
-        // Show all mode — full opacity
-        if (el) {
-          el.style.transition = "opacity 0.6s ease, transform 0.4s ease";
-          el.style.opacity = "1";
-          el.style.transform = "scale(1)";
-        }
-        if (shadow) shadow.style.opacity = "1";
-        return;
-      }
-
-      if (eventIndex === currentIdx) {
-        // Current event: fade in with scale pulse
-        if (el) {
-          el.style.transition = "opacity 0.6s ease, transform 0.4s ease";
-          el.style.opacity = "1";
-          el.style.transform = "scale(1.5)";
-          setTimeout(() => {
-            el.style.transform = "scale(1)";
-          }, 600);
-        }
-        if (shadow) shadow.style.opacity = "1";
+        wrapper.classList.add("marker-active");
+      } else if (eventIndex === currentIdx) {
+        wrapper.classList.add("marker-pulse");
       } else if (eventIndex < currentIdx) {
-        // Past events: 25% opacity
-        if (el) {
-          el.style.transition = "opacity 0.8s ease, transform 0.4s ease";
-          el.style.opacity = "0.25";
-          el.style.transform = "scale(1)";
-        }
-        if (shadow) shadow.style.opacity = "0.25";
+        wrapper.classList.add("marker-dim");
       } else {
-        // Future events: completely hidden
-        if (el) {
-          el.style.transition = "opacity 0.3s ease";
-          el.style.opacity = "0";
-          el.style.transform = "scale(0.5)";
-        }
-        if (shadow) shadow.style.opacity = "0";
+        wrapper.classList.add("marker-hidden");
       }
     });
   }, [eventsWithCoords]);
@@ -156,7 +150,7 @@ export default function EventsDisplay() {
 
         const markerIcon = L.divIcon({
           className: "custom-marker",
-          html: `<div style="
+          html: `<div data-marker-id="${event.id}" style="
             background: ${typeInfo.markerColor};
             width: 32px; height: 32px;
             border-radius: 50%;
@@ -208,12 +202,8 @@ export default function EventsDisplay() {
 
       mapInstanceRef.current = map;
 
-      // Apply current playback state after markers are rendered in DOM
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          updateMarkerOpacity(playbackIndex);
-        });
-      });
+      // Apply current playback state after markers render
+      setTimeout(() => updateMarkerOpacity(playbackIndex), 200);
     });
 
     return () => {
