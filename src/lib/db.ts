@@ -88,6 +88,32 @@ export interface PageAccess {
   allowedGroups: string[]; // group IDs (only relevant when level === "groups")
 }
 
+export interface SiteContent {
+  hero: {
+    title: string;
+    subtitle: string;
+    description: string;
+  };
+  about: {
+    title: string;
+    text: string;
+    values: string[];
+  };
+  impact: {
+    title: string;
+    stats: { label: string; value: string; icon: string }[];
+  };
+  donation: {
+    title: string;
+    text: string;
+  };
+  contact: {
+    title: string;
+    text: string;
+    email: string;
+  };
+}
+
 // ─── File helpers ────────────────────────────────────────────────────────
 
 function readJson<T>(filename: string, fallback: T): T {
@@ -490,4 +516,49 @@ export function recordConsent(
     relationToPlugah: profileData.relationToPlugah || undefined,
     agreeToMailings: profileData.agreeToMailings ?? false,
   });
+}
+
+// ─── Site Content ────────────────────────────────────────────────────────
+
+const DEFAULT_SITE_CONTENT: SiteContent = {
+  hero: {
+    title: "פלוגת צב",
+    subtitle: "ביחד, תמיד מוכנים",
+    description:
+      "אנחנו חיילי מילואים, חברים, משפחה. יחד אנחנו שומרים על הבית ובונים קהילה חזקה.",
+  },
+  about: {
+    title: "אודות הפלוגה",
+    text: "פלוגת צב היא יחידת מילואים שמפגישה לוחמים מכל רחבי הארץ. מאז הקמתה, הפלוגה מייצגת את הערכים של אחווה, מקצועיות ומחויבות למטרה.\n\nאנחנו לא רק חיילים — אנחנו חברים, שותפים, ומשפחה. כל אימון, כל פעילות, כל רגע יחד מחזק את הקשר שלנו ואת המוכנות שלנו.\n\nהתרומות שלכם מאפשרות לנו לשדרג ציוד, לארגן פעילויות גיבוש, ולתמוך בלוחמים ובמשפחותיהם.",
+    values: ["מקצועיות", "אחווה", "מחויבות", "חוסן"],
+  },
+  impact: {
+    title: "השפעתנו",
+    stats: [
+      { label: "לוחמים פעילים", value: "120+", icon: "🛡️" },
+      { label: "אימונים בשנה", value: "50+", icon: "🎯" },
+      { label: "שנות פעילות", value: "15", icon: "📅" },
+      { label: "אחוז מחויבות", value: "100%", icon: "💪" },
+    ],
+  },
+  donation: {
+    title: "עזרו לנו להמשיך",
+    text: "כל תרומה עוזרת לנו לשדרג ציוד, לארגן פעילויות גיבוש, ולתמוך בלוחמים ובמשפחותיהם. ביחד אנחנו חזקים יותר.",
+  },
+  contact: {
+    title: "צור קשר",
+    text: "רוצים לדעת עוד? לתרום? להצטרף? אנחנו כאן בשבילכם.",
+    email: "contact@plugat-tzav.org",
+  },
+};
+
+export function getSiteContent(): SiteContent {
+  return readJson<SiteContent>("site-content.json", DEFAULT_SITE_CONTENT);
+}
+
+export function updateSiteContent(updates: Partial<SiteContent>): SiteContent {
+  const current = getSiteContent();
+  const merged = { ...current, ...updates };
+  writeJson("site-content.json", merged);
+  return merged;
 }

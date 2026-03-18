@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
@@ -21,6 +22,7 @@ export default function MembersNav({
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -31,6 +33,24 @@ export default function MembersNav({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
+  function isActive(href: string) {
+    if (href === "/members") return pathname === "/members";
+    return pathname.startsWith(href);
+  }
+
+  function linkClass(href: string, base: string) {
+    return `${base} ${
+      isActive(href)
+        ? "bg-dark-surface text-sand"
+        : "text-gray-300 hover:bg-dark-surface hover:text-sand"
+    }`;
+  }
 
   return (
     <nav
@@ -57,25 +77,25 @@ export default function MembersNav({
         <div className="hidden items-center gap-4 md:flex">
           <Link
             href="/members"
-            className="rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-dark-surface hover:text-sand"
+            className={linkClass("/members", "rounded-lg px-3 py-2 text-sm transition-colors")}
           >
             דף הבית
           </Link>
           <Link
             href="/members/documents"
-            className="rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-dark-surface hover:text-sand"
+            className={linkClass("/members/documents", "rounded-lg px-3 py-2 text-sm transition-colors")}
           >
             מסמכים
           </Link>
           <Link
             href="/members/gallery"
-            className="rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-dark-surface hover:text-sand"
+            className={linkClass("/members/gallery", "rounded-lg px-3 py-2 text-sm transition-colors")}
           >
             גלריה
           </Link>
           <Link
-            href="/events"
-            className="rounded-lg px-3 py-2 text-sm text-gray-300 transition-colors hover:bg-dark-surface hover:text-sand"
+            href="/members/events"
+            className={linkClass("/members/events", "rounded-lg px-3 py-2 text-sm transition-colors")}
           >
             אירועים
           </Link>
@@ -183,36 +203,31 @@ export default function MembersNav({
             </div>
             <Link
               href="/members"
-              onClick={() => setMenuOpen(false)}
-              className="w-full rounded-lg px-4 py-3 text-center text-gray-300 transition-colors hover:bg-dark-surface hover:text-sand"
+              className={linkClass("/members", "w-full rounded-lg px-4 py-3 text-center transition-colors")}
             >
               דף הבית
             </Link>
             <Link
               href="/members/documents"
-              onClick={() => setMenuOpen(false)}
-              className="w-full rounded-lg px-4 py-3 text-center text-gray-300 transition-colors hover:bg-dark-surface hover:text-sand"
+              className={linkClass("/members/documents", "w-full rounded-lg px-4 py-3 text-center transition-colors")}
             >
               מסמכים
             </Link>
             <Link
               href="/members/gallery"
-              onClick={() => setMenuOpen(false)}
-              className="w-full rounded-lg px-4 py-3 text-center text-gray-300 transition-colors hover:bg-dark-surface hover:text-sand"
+              className={linkClass("/members/gallery", "w-full rounded-lg px-4 py-3 text-center transition-colors")}
             >
               גלריה
             </Link>
             <Link
-              href="/events"
-              onClick={() => setMenuOpen(false)}
-              className="w-full rounded-lg px-4 py-3 text-center text-gray-300 transition-colors hover:bg-dark-surface hover:text-sand"
+              href="/members/events"
+              className={linkClass("/members/events", "w-full rounded-lg px-4 py-3 text-center transition-colors")}
             >
               אירועים
             </Link>
             {userRole === "admin" && (
               <Link
                 href="/admin"
-                onClick={() => setMenuOpen(false)}
                 className="w-full rounded-lg bg-olive/20 px-4 py-3 text-center text-olive-light transition-colors hover:bg-olive/30"
               >
                 ⚙️ ניהול
@@ -220,7 +235,6 @@ export default function MembersNav({
             )}
             <Link
               href="/"
-              onClick={() => setMenuOpen(false)}
               className="w-full rounded-lg px-4 py-3 text-center text-gray-500 transition-colors hover:bg-dark-surface hover:text-gray-300"
             >
               אתר ראשי

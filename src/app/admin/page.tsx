@@ -153,6 +153,15 @@ export default async function AdminDashboard() {
             עריכת טקסט מדיניות הפרטיות, ניהול גרסאות ומעקב אחר אישורי משתמשים.
           </p>
         </Link>
+        <Link
+          href="/admin/content"
+          className="rounded-xl border border-dark-surface bg-dark-card p-6 transition-all hover:border-sand hover:shadow-lg"
+        >
+          <h2 className="mb-2 text-xl font-bold text-sand">✏️ עריכת תוכן</h2>
+          <p className="text-sm text-gray-400">
+            עריכת הטקסטים והתוכן המוצג בעמוד הראשי של האתר.
+          </p>
+        </Link>
       </div>
 
       {/* Recent users */}

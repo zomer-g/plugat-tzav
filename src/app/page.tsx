@@ -7,8 +7,11 @@ import Timeline from "@/components/Timeline";
 import Donation from "@/components/Donation";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
+import { getSiteContent } from "@/lib/db";
 
 export default function Home() {
+  const content = getSiteContent();
+
   return (
     <>
       {/* Skip to main content — WCAG 2.4.1 */}
@@ -22,7 +25,7 @@ export default function Home() {
       <main id="main-content">
         <Hero />
         <About />
-        <Impact />
+        <Impact content={content.impact} />
         <Gallery />
         <Timeline />
         <Donation />

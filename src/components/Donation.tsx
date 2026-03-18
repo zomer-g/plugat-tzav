@@ -1,4 +1,8 @@
+import { getSiteContent } from "@/lib/db";
+
 export default function Donation() {
+  const content = getSiteContent();
+
   return (
     <section id="donate" aria-labelledby="donate-heading" className="py-20">
       <div className="mx-auto max-w-4xl px-4 text-center">
@@ -7,11 +11,10 @@ export default function Donation() {
             id="donate-heading"
             className="mb-6 text-3xl font-bold text-white md:text-4xl"
           >
-            עזרו לנו להמשיך
+            {content.donation.title}
           </h2>
           <p className="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-gray-200">
-            כל תרומה עוזרת לנו לשדרג ציוד, לארגן פעילויות גיבוש, ולתמוך
-            בלוחמים ובמשפחותיהם. ביחד אנחנו חזקים יותר.
+            {content.donation.text}
           </p>
 
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">

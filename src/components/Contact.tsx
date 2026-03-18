@@ -1,6 +1,9 @@
+import { getSiteContent } from "@/lib/db";
+
 export default function Contact() {
+  const content = getSiteContent();
   const email =
-    process.env.NEXT_PUBLIC_CONTACT_EMAIL || "contact@plugat-tzav.org";
+    process.env.NEXT_PUBLIC_CONTACT_EMAIL || content.contact.email;
 
   return (
     <section id="contact" aria-labelledby="contact-heading" className="bg-dark-surface py-20">
@@ -9,10 +12,10 @@ export default function Contact() {
           id="contact-heading"
           className="mb-4 text-3xl font-bold text-sand md:text-4xl"
         >
-          צור קשר
+          {content.contact.title}
         </h2>
         <p className="mx-auto mb-12 max-w-xl text-gray-200">
-          רוצים לדעת עוד? לתרום? להצטרף? אנחנו כאן בשבילכם.
+          {content.contact.text}
         </p>
 
         <div className="grid gap-8 md:grid-cols-3">

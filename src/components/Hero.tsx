@@ -1,6 +1,9 @@
 import Image from "next/image";
+import { getSiteContent } from "@/lib/db";
 
 export default function Hero() {
+  const content = getSiteContent();
+
   return (
     <section
       aria-labelledby="hero-heading"
@@ -28,13 +31,12 @@ export default function Hero() {
           id="hero-heading"
           className="max-w-3xl text-4xl font-black leading-tight text-white md:text-6xl"
         >
-          פלוגת צב
-          <span className="mt-2 block text-sand">ביחד, תמיד מוכנים</span>
+          {content.hero.title}
+          <span className="mt-2 block text-sand">{content.hero.subtitle}</span>
         </h1>
 
         <p className="max-w-xl text-lg leading-relaxed text-gray-200 md:text-xl">
-          אנחנו חיילי מילואים, חברים, משפחה. יחד אנחנו שומרים על הבית ובונים
-          קהילה חזקה.
+          {content.hero.description}
         </p>
 
         <div className="mt-4 flex flex-col gap-4 sm:flex-row">

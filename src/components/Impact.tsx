@@ -1,13 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-
-const stats = [
-  { value: 120, label: "לוחמים פעילים", suffix: "+" },
-  { value: 50, label: "אימונים בשנה", suffix: "+" },
-  { value: 15, label: "שנות פעילות", suffix: "" },
-  { value: 100, label: "אחוז מחויבות", suffix: "%" },
-];
+import type { SiteContent } from "@/lib/db";
 
 function AnimatedNumber({
   target,
@@ -61,7 +55,16 @@ function AnimatedNumber({
   );
 }
 
-export default function Impact() {
+/** Parse a stat value like "120+" or "100%" into numeric target + suffix */
+function parseStatValue(value: string): { target: number; suffix: string } {
+  const match = value.match(/^(\d+)(.*)$/);
+  if (match) {
+    return { target: parseInt(match[1], 10), suffix: match[2] };
+  }
+  return { target: 0, suffix: value };
+}
+
+export default function Impact({ content }: { content: SiteContent["impact"] }) {
   return (
     <section id="impact" aria-labelledby="impact-heading" className="py-20">
       <div className="mx-auto max-w-6xl px-4">
@@ -69,27 +72,30 @@ export default function Impact() {
           id="impact-heading"
           className="mb-4 text-center text-3xl font-bold text-sand md:text-4xl"
         >
-          השפעתנו
+          {content.title}
         </h2>
         <p className="mx-auto mb-16 max-w-2xl text-center text-gray-200">
           המספרים מדברים בעד עצמם. הפלוגה גדלה ומתחזקת בזכותכם.
         </p>
 
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-          {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="rounded-xl border border-slate-mil/20 bg-dark-surface p-8 text-center"
-              aria-label={`${stat.value}${stat.suffix} ${stat.label}`}
-            >
-              <div className="mb-2 text-4xl font-black text-olive-light md:text-5xl">
-                <AnimatedNumber target={stat.value} suffix={stat.suffix} />
+          {content.stats.map((stat) => {
+            const { target, suffix } = parseStatValue(stat.value);
+            return (
+              <div
+                key={stat.label}
+                className="rounded-xl border border-slate-mil/20 bg-dark-surface p-8 text-center"
+                aria-label={`${stat.value} ${stat.label}`}
+              >
+                <div className="mb-2 text-4xl font-black text-olive-light md:text-5xl">
+                  <AnimatedNumber target={target} suffix={suffix} />
+                </div>
+                <div className="text-sm font-medium text-gray-200">
+                  {stat.label}
+                </div>
               </div>
-              <div className="text-sm font-medium text-gray-200">
-                {stat.label}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </section>

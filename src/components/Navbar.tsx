@@ -10,7 +10,7 @@ const navLinks = [
   { href: "#impact", label: "השפעתנו" },
   { href: "#gallery", label: "עדכונים" },
   { href: "#timeline", label: "ציר הזמן" },
-  { href: "/events", label: "אירועים" },
+  { href: "/members/events", label: "אירועים" },
   { href: "#contact", label: "צור קשר" },
 ];
 
