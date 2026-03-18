@@ -111,20 +111,15 @@ export default function OnboardingForm({
               <label htmlFor="onb-relation" className="mb-1 block text-sm text-gray-400">
                 קשר לפלוגה
               </label>
-              <select
+              <input
                 id="onb-relation"
+                type="text"
                 value={relationToPlugah}
                 onChange={(e) => setRelationToPlugah(e.target.value)}
-                className="w-full rounded-lg border border-dark-border bg-dark-bg px-3 py-2 text-white focus:border-olive focus:outline-none"
-              >
-                <option value="">בחר...</option>
-                <option value="לוחם">לוחם</option>
-                <option value="מפקד">מפקד</option>
-                <option value="בן/בת משפחה">בן/בת משפחה</option>
-                <option value="חבר/ה">חבר/ה</option>
-                <option value="תומך/ת">תומך/ת</option>
-                <option value="אחר">אחר</option>
-              </select>
+                className="w-full rounded-lg border border-dark-border bg-dark-bg px-3 py-2 text-white placeholder-gray-600 focus:border-olive focus:outline-none"
+                placeholder="לדוגמה: לוחם, מפקד, בן משפחה..."
+                maxLength={200}
+              />
             </div>
 
             <div>
