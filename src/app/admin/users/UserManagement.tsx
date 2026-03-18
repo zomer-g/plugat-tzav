@@ -6,13 +6,16 @@ import type { DbUser, DbGroup } from "@/lib/db";
 interface Props {
   initialUsers: DbUser[];
   groups: DbGroup[];
+  currentPolicyVersion: number;
 }
 
-export default function UserManagement({ initialUsers, groups }: Props) {
+export default function UserManagement({ initialUsers, groups, currentPolicyVersion }: Props) {
   const [users, setUsers] = useState(initialUsers);
   const [editingUser, setEditingUser] = useState<string | null>(null);
+  const [detailsUser, setDetailsUser] = useState<string | null>(null);
   const [loading, setLoading] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [categoryInputs, setCategoryInputs] = useState<Record<string, string>>({});
 
   const filteredUsers = users.filter(
     (u) =>
@@ -56,6 +59,23 @@ export default function UserManagement({ initialUsers, groups }: Props) {
         return;
       }
       setUsers((prev) => prev.filter((u) => u.id !== id));
+    } finally {
+      setLoading(null);
+    }
+  }
+
+  async function handleUpdateCategory(userId: string, category: string) {
+    setLoading(userId);
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: userId, internalCategory: category }),
+      });
+      if (res.ok) {
+        const updated = await res.json();
+        setUsers((prev) => prev.map((u) => (u.id === userId ? updated : u)));
+      }
     } finally {
       setLoading(null);
     }
@@ -121,7 +141,29 @@ export default function UserManagement({ initialUsers, groups }: Props) {
                     </div>
                   )}
                   <div>
-                    <p className="font-bold text-gray-200">{user.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold text-gray-200">{user.name}</p>
+                      {/* Consent badge */}
+                      {currentPolicyVersion > 0 && (
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs ${
+                            user.consentVersion === currentPolicyVersion
+                              ? "bg-green-900/30 text-green-400"
+                              : "bg-red-900/30 text-red-400"
+                          }`}
+                        >
+                          {user.consentVersion === currentPolicyVersion
+                            ? `✓ v${user.consentVersion}`
+                            : "טרם אישר/ה"}
+                        </span>
+                      )}
+                      {/* Internal category badge */}
+                      {user.internalCategory && (
+                        <span className="rounded-full bg-purple-900/30 px-2 py-0.5 text-xs text-purple-300">
+                          {user.internalCategory}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-sm text-gray-500">{user.email}</p>
                   </div>
                 </div>
@@ -170,6 +212,18 @@ export default function UserManagement({ initialUsers, groups }: Props) {
                     🏷️ קבוצות ({user.groups.length})
                   </button>
 
+                  {/* Details */}
+                  <button
+                    onClick={() =>
+                      setDetailsUser(detailsUser === user.id ? null : user.id)
+                    }
+                    className="rounded-lg bg-dark-surface px-3 py-1.5 text-sm text-gray-300 transition-colors hover:bg-dark-bg"
+                    aria-expanded={detailsUser === user.id}
+                    aria-label={`פרטים ${user.name}`}
+                  >
+                    📋 פרטים
+                  </button>
+
                   {/* Delete */}
                   <button
                     onClick={() => handleDeleteUser(user.id, user.name)}
@@ -216,6 +270,98 @@ export default function UserManagement({ initialUsers, groups }: Props) {
                     {groups.length === 0 && (
                       <p className="text-sm text-gray-500">
                         אין קבוצות. צרו קבוצות בדף ניהול קבוצות.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Details panel: internal category + consent info */}
+              {detailsUser === user.id && (
+                <div className="mt-4 space-y-4 rounded-lg bg-dark-surface p-4">
+                  {/* Internal category */}
+                  <div>
+                    <p className="mb-2 text-sm font-bold text-gray-300">
+                      🏷️ קטגוריה פנימית <span className="font-normal text-gray-500">(לא נראה למשתמש)</span>
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={categoryInputs[user.id] ?? user.internalCategory ?? ""}
+                        onChange={(e) =>
+                          setCategoryInputs((prev) => ({
+                            ...prev,
+                            [user.id]: e.target.value,
+                          }))
+                        }
+                        placeholder="לדוגמה: מפקד, לוחם ותיק, תורם..."
+                        className="flex-1 rounded-lg border border-dark-border bg-dark-bg px-3 py-2 text-sm text-white placeholder-gray-600 focus:border-olive focus:outline-none"
+                        maxLength={100}
+                      />
+                      <button
+                        onClick={() => {
+                          const val = categoryInputs[user.id] ?? user.internalCategory ?? "";
+                          handleUpdateCategory(user.id, val.trim());
+                        }}
+                        className="rounded-lg bg-olive px-4 py-2 text-sm font-bold text-white hover:bg-olive-light"
+                      >
+                        שמור
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Consent info */}
+                  <div>
+                    <p className="mb-2 text-sm font-bold text-gray-300">
+                      📋 מידע אישור מדיניות
+                    </p>
+                    {user.consentVersion ? (
+                      <div className="grid gap-2 text-sm sm:grid-cols-2">
+                        <div className="rounded bg-dark-bg p-2">
+                          <span className="text-gray-500">גרסה שאושרה: </span>
+                          <span className="text-white">{user.consentVersion}</span>
+                          {user.consentVersion === currentPolicyVersion ? (
+                            <span className="mr-2 text-green-400"> ✓ עדכני</span>
+                          ) : (
+                            <span className="mr-2 text-red-400"> ✗ לא עדכני</span>
+                          )}
+                        </div>
+                        <div className="rounded bg-dark-bg p-2">
+                          <span className="text-gray-500">תאריך אישור: </span>
+                          <span className="text-white">
+                            {user.consentDate
+                              ? new Date(user.consentDate).toLocaleDateString("he-IL", {
+                                  day: "numeric",
+                                  month: "long",
+                                  year: "numeric",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })
+                              : "—"}
+                          </span>
+                        </div>
+                        {user.phone && (
+                          <div className="rounded bg-dark-bg p-2">
+                            <span className="text-gray-500">טלפון: </span>
+                            <span className="text-white" dir="ltr">{user.phone}</span>
+                          </div>
+                        )}
+                        {user.relationToPlugah && (
+                          <div className="rounded bg-dark-bg p-2">
+                            <span className="text-gray-500">קשר לפלוגה: </span>
+                            <span className="text-white">{user.relationToPlugah}</span>
+                          </div>
+                        )}
+                        <div className="rounded bg-dark-bg p-2">
+                          <span className="text-gray-500">מסכים לדיוורים: </span>
+                          <span className={user.agreeToMailings ? "text-green-400" : "text-red-400"}>
+                            {user.agreeToMailings ? "כן ✓" : "לא ✗"}
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500">
+                        המשתמש טרם אישר מדיניות פרטיות
                       </p>
                     )}
                   </div>
