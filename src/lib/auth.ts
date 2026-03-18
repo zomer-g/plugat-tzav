@@ -54,6 +54,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         (session.user as any).groups = dbUser.groups;
         (session.user as any).id = dbUser.id;
         (session.user as any).active = dbUser.active;
+        (session.user as any).consentVersion = dbUser.consentVersion;
         /* eslint-enable @typescript-eslint/no-explicit-any */
       }
       return session;
