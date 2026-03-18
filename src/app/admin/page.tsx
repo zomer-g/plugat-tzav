@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getUsers, getGroups, getPageAccess, getEvents, getActivityLogs } from "@/lib/db";
+import { getUsers, getGroups, getPageAccess, getEvents, getActivityLogs, getPrivacyPolicy } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +9,10 @@ export default async function AdminDashboard() {
   const pages = getPageAccess();
   const events = getEvents();
   const logs = getActivityLogs();
+  const policy = getPrivacyPolicy();
+  const consentedCount = users.filter(
+    (u) => u.consentVersion === policy.currentVersion && policy.currentVersion > 0
+  ).length;
 
   const stats = [
     {
@@ -51,6 +55,20 @@ export default async function AdminDashboard() {
       value: users.filter((u) => u.role === "admin").length,
       icon: "🛡️",
       href: "/admin/users",
+      color: "olive",
+    },
+    {
+      label: "מדיניות פרטיות",
+      value: policy.currentVersion > 0 ? `v${policy.currentVersion}` : "לא פורסם",
+      icon: "📋",
+      href: "/admin/privacy-policy",
+      color: "sand",
+    },
+    {
+      label: "אישרו מדיניות",
+      value: policy.currentVersion > 0 ? `${consentedCount}/${users.length}` : "—",
+      icon: "✅",
+      href: "/admin/privacy-policy",
       color: "olive",
     },
   ];
@@ -124,6 +142,15 @@ export default async function AdminDashboard() {
           <h2 className="mb-2 text-xl font-bold text-sand">📊 יומן פעילות</h2>
           <p className="text-sm text-gray-400">
             מעקב אחר כל הדפים שכל משתמש ביקר בהם — סטטיסטיקות וסינון.
+          </p>
+        </Link>
+        <Link
+          href="/admin/privacy-policy"
+          className="rounded-xl border border-dark-surface bg-dark-card p-6 transition-all hover:border-olive hover:shadow-lg"
+        >
+          <h2 className="mb-2 text-xl font-bold text-sand">📋 מדיניות פרטיות</h2>
+          <p className="text-sm text-gray-400">
+            עריכת טקסט מדיניות הפרטיות, ניהול גרסאות ומעקב אחר אישורי משתמשים.
           </p>
         </Link>
       </div>
