@@ -23,6 +23,27 @@ export interface DbUser {
   groups: string[];
   active: boolean;
   createdAt: string;
+  // Onboarding profile (optional, filled during onboarding)
+  phone?: string;
+  relationToPlugah?: string;
+  agreeToMailings?: boolean;
+  // Privacy policy consent
+  consentVersion?: number;
+  consentDate?: string;
+  // Admin-only internal category (invisible to user)
+  internalCategory?: string;
+}
+
+export interface PrivacyPolicyVersion {
+  version: number;
+  text: string;
+  createdAt: string;
+  createdBy: string; // admin user ID
+}
+
+export interface PrivacyPolicyData {
+  currentVersion: number;
+  versions: PrivacyPolicyVersion[];
 }
 
 export interface DbGroup {
@@ -190,7 +211,7 @@ export function createUser(data: {
 
 export function updateUser(
   id: string,
-  updates: Partial<Pick<DbUser, "role" | "groups" | "active" | "name">>
+  updates: Partial<Pick<DbUser, "role" | "groups" | "active" | "name" | "phone" | "relationToPlugah" | "agreeToMailings" | "consentVersion" | "consentDate" | "internalCategory">>
 ): DbUser | null {
   const users = getUsers();
   const idx = users.findIndex((u) => u.id === id);
@@ -412,4 +433,61 @@ export function getActivityLogsByUser(userId: string): ActivityLog[] {
 
 export function clearActivityLogs(): void {
   writeJson("activity-log.json", []);
+}
+
+// ─── Privacy Policy ─────────────────────────────────────────────────────
+
+export function getPrivacyPolicy(): PrivacyPolicyData {
+  return readJson<PrivacyPolicyData>("privacy-policy.json", {
+    currentVersion: 0,
+    versions: [],
+  });
+}
+
+export function getCurrentPolicyVersion(): PrivacyPolicyVersion | null {
+  const policy = getPrivacyPolicy();
+  if (policy.currentVersion === 0) return null;
+  return policy.versions.find((v) => v.version === policy.currentVersion) || null;
+}
+
+export function createPolicyVersion(text: string, adminId: string): PrivacyPolicyVersion {
+  const policy = getPrivacyPolicy();
+  const newVersion: PrivacyPolicyVersion = {
+    version: policy.currentVersion + 1,
+    text,
+    createdAt: new Date().toISOString(),
+    createdBy: adminId,
+  };
+  policy.versions.push(newVersion);
+  policy.currentVersion = newVersion.version;
+  writeJson("privacy-policy.json", policy);
+  return newVersion;
+}
+
+export function hasUserConsented(userId: string): boolean {
+  const user = getUserById(userId);
+  if (!user) return false;
+  const policy = getPrivacyPolicy();
+  if (policy.currentVersion === 0) return true; // No policy = no consent needed
+  return user.consentVersion === policy.currentVersion;
+}
+
+export function recordConsent(
+  userId: string,
+  version: number,
+  profileData: {
+    name?: string;
+    phone?: string;
+    relationToPlugah?: string;
+    agreeToMailings?: boolean;
+  }
+): DbUser | null {
+  return updateUser(userId, {
+    consentVersion: version,
+    consentDate: new Date().toISOString(),
+    name: profileData.name || undefined,
+    phone: profileData.phone || undefined,
+    relationToPlugah: profileData.relationToPlugah || undefined,
+    agreeToMailings: profileData.agreeToMailings ?? false,
+  });
 }
