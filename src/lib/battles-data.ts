@@ -23,6 +23,13 @@ export interface BattleLocation {
   lng: number;
 }
 
+export interface WhatsAppMessage {
+  time: string;
+  sender: string;
+  text: string;
+  audioFile?: string; // path to audio file in /audio/battles/
+}
+
 export interface TimelineEvent {
   id: string;
   time: string; // e.g. "07:00", "~12:00", "Evening"
@@ -33,12 +40,13 @@ export interface TimelineEvent {
   location: BattleLocation;
   tankNumbers: string[]; // which tanks involved
   quote?: { text: string; author: string };
+  whatsappMessages?: WhatsAppMessage[];
 }
 
 // ─── Locations ──────────────────────────────────────────────────────────
 
 export const BATTLE_LOCATIONS: Record<string, BattleLocation> = {
-  tzeelim: { name: "בסיס צאלים", lat: 31.2236, lng: 34.5994 },
+  tzeelim: { name: "בסיס צאלים", lat: 31.175747, lng: 34.557411 },
   beeri: { name: "בארי", lat: 31.4344, lng: 34.4894 },
   kissufim: { name: "כיסופים", lat: 31.3747, lng: 34.3997 },
   nirOz: { name: "ניר עוז", lat: 31.3833, lng: 34.4042 },
@@ -50,7 +58,7 @@ export const BATTLE_LOCATIONS: Record<string, BattleLocation> = {
   keremShalom: { name: "כרם שלום", lat: 31.2167, lng: 34.2833 },
   reim: { name: "רעים", lat: 31.3833, lng: 34.4667 },
   nirim: { name: "נירים", lat: 31.35, lng: 34.4 },
-  gevulot: { name: "צומת גבולות", lat: 31.25, lng: 34.4 },
+  gevulot: { name: "צומת גבולות", lat: 31.269375, lng: 34.433152 },
 };
 
 // ─── Tank Crews ─────────────────────────────────────────────────────────
@@ -210,6 +218,9 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "עוד לפני ההוקפצה הרשמית, מפקד הפלוגה יואל אמיתי מזהה את חומרת המצב ושולח הודעה לחיילים.",
     location: BATTLE_LOCATIONS.tzeelim,
     tankNumbers: [],
+    whatsappMessages: [
+      { time: "08:32", sender: "יואל אמיתי", text: "שבת שלום אחים, אני יוצא מנקודת הנחה שכולם מעודכנים באופן כזה או אחר בהתפתחויות המדיניות. אני בקשר עם המג\"ד שלנו, הם בהכנות, עוד לא ברור לאן ואיך ילך. בכל מקרה, אבקש מכולם לעשות תהליכי הכנה מנטליים. אם נדרש להתייצב, נעשה מה שצריך. הישארו בטוחים, הישארו נחושים וקרי רוח. אנחנו מוכנים." },
+    ],
   },
   {
     id: "evt-03",
@@ -217,9 +228,23 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
     date: "2023-10-07",
     dateLabel: "7 באוקטובר",
     title: '"הוקפצנו" — הודעה רשמית',
-    description: "ההודעה הרשמית להוקפצת הפלוגה מגיעה. החיילים מתחילים לזרום לבסיס צאלים.",
+    description: "ההודעה הרשמית להוקפצת הפלוגה מגיעה. החיילים מתחילים לזרום לבסיס צאלים מכל רחבי הארץ.",
     location: BATTLE_LOCATIONS.tzeelim,
     tankNumbers: [],
+    whatsappMessages: [
+      { time: "09:37", sender: "יואל אמיתי", text: "חברים, *הוקפצנו* בינתיים לצאלים למלא טנקים ולצאת לדרך. אני 10 דק' יוצא לדרך. *סעו בזהירות* תהיו בקשר בבקשה עם המ\"מים" },
+      { time: "09:38", sender: "אחיה", text: "בדרך" },
+      { time: "09:41", sender: "אסף שרעבי", text: "יוצא כמה דק" },
+      { time: "09:47", sender: "יואל אמיתי", text: "(הודעה קולית)", audioFile: "/audio/battles/PTT-20231007-WA0018.opus" },
+      { time: "09:48", sender: "יואל אמיתי", text: "(הודעה קולית)", audioFile: "/audio/battles/PTT-20231007-WA0019.opus" },
+      { time: "09:50", sender: "רועי אריה", text: "יוצא בקרוב מהקריות" },
+      { time: "09:51", sender: "איליי שוע", text: "יוצא מכפר סבא" },
+      { time: "09:52", sender: "אסף שרעבי", text: "יוצא מתל אביב" },
+      { time: "09:52", sender: "אוריאל מלמד", text: "יוצא מבית שמש 10 דק" },
+      { time: "09:52", sender: "רוסלן גולדמן", text: "יוצא מכיוון אשדוד, מישהו צריך טרמפ?" },
+      { time: "09:55", sender: "רועי עזראי", text: "מוציא רכב מבאר שבע" },
+      { time: "10:04", sender: "יואל אמיתי", text: "20 דק' אוסף את אביב רם ועונה לכל מי שכתב לי" },
+    ],
   },
   {
     id: "evt-04",
@@ -231,6 +256,13 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "החיילים הראשונים מגיעים לבסיס צאלים ומתחילים להכין את הטנקים ליציאה. ההכנות מואצות.",
     location: BATTLE_LOCATIONS.tzeelim,
     tankNumbers: ["377", "384", "412"],
+    whatsappMessages: [
+      { time: "11:40", sender: "עידו נדב", text: "(הודעה קולית — הנחיות הגעה)", audioFile: "/audio/battles/PTT-20231007-WA0029.opus" },
+      { time: "11:40", sender: "עידו נדב", text: "תקשיבו להקלטה חשוב. להגיע דרך באר שבע לצאלים" },
+      { time: "11:44", sender: "שרון פינק", text: "חברים להגיע לפה מחכים לכם להכין טנקים" },
+      { time: "12:31", sender: "יואל אמיתי", text: "אני צריך פה צוותים, מי מגיע?" },
+      { time: "12:42", sender: "יואל אמיתי", text: "חברים, תגיעו, צריכים אותנו." },
+    ],
   },
   {
     id: "evt-05",
@@ -246,6 +278,15 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       text: "כל טנק שייצא עכשיו יפגוש מחבלים",
       author: "שמעון צוקרמן (מצטט את סלמאן חבקה ז\"ל)",
     },
+    whatsappMessages: [
+      { time: "13:55", sender: "אפק לוינסון", text: "(הודעה קולית — הקלטה חשובה)", audioFile: "/audio/battles/PTT-20231007-WA0036.opus" },
+      { time: "14:06", sender: "אפק לוינסון", text: "(הודעה קולית)", audioFile: "/audio/battles/PTT-20231007-WA0037.opus" },
+      { time: "14:14", sender: "אפק לוינסון", text: "(הודעה קולית — הנחיות למגיעים)", audioFile: "/audio/battles/PTT-20231007-WA0038.opus" },
+      { time: "14:14", sender: "אפק לוינסון", text: "(הודעה קולית)", audioFile: "/audio/battles/PTT-20231007-WA0039.opus" },
+      { time: "15:07", sender: "אוהד עליאש", text: "אני במשטח. זמין לעזרה. תחברו אלי." },
+      { time: "15:53", sender: "Zomer Guy", text: "סטטוס: צאלים 34, בדרך 9, לא עונה 7, לא יגיע 5, שטח 4" },
+      { time: "15:54", sender: "נדב דוידזון", text: "תודה זומר. מבקש שאף אחד לא יצא לשום מקום בלי לדווח לזומר. חייבים להיות בשליטה כול הזמן על המיקומים של כולם" },
+    ],
   },
   {
     id: "evt-06",

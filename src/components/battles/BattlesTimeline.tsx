@@ -115,6 +115,31 @@ function EventCard({
                 </cite>
               </blockquote>
             )}
+
+            {/* WhatsApp Messages */}
+            {event.whatsappMessages && event.whatsappMessages.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  💬 מתוך קבוצת הווטסאפ של הפלוגה
+                </p>
+                <div className="max-h-64 overflow-y-auto space-y-1.5 rounded-lg bg-[#0B141A] p-3">
+                  {event.whatsappMessages.map((msg, idx) => (
+                    <div key={idx} className="rounded-lg bg-[#1F2C34] px-3 py-2">
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="font-bold text-[#00A884]">{msg.sender}</span>
+                        <span className="text-gray-500">{msg.time}</span>
+                      </div>
+                      <p className="mt-0.5 text-sm text-gray-200">{msg.text}</p>
+                      {msg.audioFile && (
+                        <audio controls className="mt-1.5 h-8 w-full" preload="none">
+                          <source src={msg.audioFile} type="audio/ogg; codecs=opus" />
+                        </audio>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
