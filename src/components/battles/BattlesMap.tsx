@@ -103,19 +103,20 @@ export default function BattlesMap() {
         maxZoom: 18,
       }).addTo(map);
 
-      // Add location markers for all battle sites (small tank icons)
+      // Add location markers for all battle sites (small labeled dots)
       const locationEntries = Object.entries(BATTLE_LOCATIONS);
       locationEntries.forEach(([, loc]) => {
         const locationIcon = L.divIcon({
-          className: "custom-marker",
+          className: "",
           html: `<div style="
-            width: 20px; height: 20px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 14px;
-            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6));
-          ">&#x1F3AF;</div>`,
-          iconSize: [20, 20],
-          iconAnchor: [10, 10],
+            background: rgba(85,107,47,0.8);
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            border: 1.5px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.5);
+          "></div>`,
+          iconSize: [8, 8],
+          iconAnchor: [4, 4],
         });
 
         L.marker([loc.lat, loc.lng], { icon: locationIcon })
@@ -136,35 +137,34 @@ export default function BattlesMap() {
 
         const tankLabel = event.tankNumbers.length > 0 ? event.tankNumbers[0] : "";
         const markerIcon = L.divIcon({
-          className: "custom-marker",
+          className: "",
           html: `<div data-bm-id="${event.id}" style="
             position: relative;
-            width: 36px; height: 36px;
-            display: flex; align-items: center; justify-content: center;
+            width: 40px; height: 48px;
+            display: flex; flex-direction: column; align-items: center;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
           ">
-            <svg viewBox="0 0 40 40" width="36" height="36">
-              <rect x="8" y="22" width="24" height="10" rx="2" fill="${mainColor}" stroke="white" stroke-width="1.5"/>
-              <rect x="5" y="28" width="30" height="6" rx="2" fill="${mainColor}" stroke="white" stroke-width="1"/>
-              <rect x="14" y="14" width="12" height="10" rx="2" fill="${mainColor}" stroke="white" stroke-width="1.5"/>
-              <rect x="26" y="17" width="12" height="3" rx="1" fill="${mainColor}" stroke="white" stroke-width="1"/>
-            </svg>
             ${tankLabel ? `<span style="
-              position: absolute;
-              bottom: -2px;
-              right: -4px;
               background: ${mainColor};
               color: white;
-              font-size: 8px;
+              font-size: 9px;
               font-weight: bold;
-              padding: 0 3px;
+              padding: 0 4px;
               border-radius: 4px;
-              border: 1px solid white;
-              line-height: 12px;
+              border: 1.5px solid white;
+              line-height: 14px;
+              white-space: nowrap;
+              margin-bottom: 1px;
             ">${tankLabel}</span>` : ""}
+            <svg viewBox="0 0 40 30" width="32" height="24">
+              <rect x="8" y="12" width="24" height="10" rx="2" fill="${mainColor}" stroke="white" stroke-width="1.5"/>
+              <rect x="5" y="18" width="30" height="6" rx="2" fill="${mainColor}" stroke="white" stroke-width="1"/>
+              <rect x="14" y="4" width="12" height="10" rx="2" fill="${mainColor}" stroke="white" stroke-width="1.5"/>
+              <rect x="26" y="7" width="12" height="3" rx="1" fill="${mainColor}" stroke="white" stroke-width="1"/>
+            </svg>
           </div>`,
-          iconSize: [36, 36],
-          iconAnchor: [18, 18],
+          iconSize: [40, 48],
+          iconAnchor: [20, 40],
         });
 
         const marker = L.marker([event.location.lat, event.location.lng], {

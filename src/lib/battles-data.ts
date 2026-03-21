@@ -59,6 +59,9 @@ export const BATTLE_LOCATIONS: Record<string, BattleLocation> = {
   reim: { name: "רעים", lat: 31.3833, lng: 34.4667 },
   nirim: { name: "נירים", lat: 31.35, lng: 34.4 },
   gevulot: { name: "צומת גבולות", lat: 31.269375, lng: 34.433152 },
+  kfarAzaGate: { name: "גדר כפר עזה", lat: 31.4834635, lng: 34.533009 },
+  tzomet_maon: { name: "צומת מעון", lat: 31.3135904, lng: 34.4338085 },
+  road_sderot_kfaraza: { name: "הדרך בין שדרות לכפר עזה", lat: 31.5011764, lng: 34.5651909 },
 };
 
 // ─── Tank Crews ─────────────────────────────────────────────────────────
@@ -346,8 +349,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
     date: "2023-10-08",
     dateLabel: "8 באוקטובר",
     title: "צ' 384 יורה על טנדר בצומת מעון",
-    description: "צוות 384 מזהה טנדר חשוד בצומת מעון ליד צומת גבולות ופותח באש.",
-    location: BATTLE_LOCATIONS.gevulot,
+    description: "צוות 384 מזהה טנדר חשוד בצומת מעון ופותח באש.",
+    location: BATTLE_LOCATIONS.tzomet_maon,
     tankNumbers: ["384"],
   },
   {
