@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Heebo } from "next/font/google";
 import SessionProvider from "@/components/SessionProvider";
 import ActivityLogger from "@/components/ActivityLogger";
@@ -48,6 +49,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="he" dir="rtl" className={heebo.variable}>
+      <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-DD5DKXP5M3"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-DD5DKXP5M3');
+          `}
+        </Script>
+      </head>
       <body className="antialiased">
         <SessionProvider>
           <ActivityLogger />
