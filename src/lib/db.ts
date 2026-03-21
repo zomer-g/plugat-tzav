@@ -182,6 +182,12 @@ const DEFAULT_PAGE_ACCESS: PageAccess[] = [
     allowedGroups: [],
   },
   {
+    pageId: "members/battles",
+    label: "קרבות בלימה",
+    level: "members",
+    allowedGroups: [],
+  },
+  {
     pageId: "events",
     label: "אירועי הפלוגה — תצוגה",
     level: "public",

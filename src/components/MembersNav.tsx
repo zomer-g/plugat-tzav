@@ -99,6 +99,12 @@ export default function MembersNav({
           >
             אירועים
           </Link>
+          <Link
+            href="/members/battles"
+            className={linkClass("/members/battles", "rounded-lg px-3 py-2 text-sm transition-colors")}
+          >
+            קרבות בלימה
+          </Link>
           {userRole === "admin" && (
             <Link
               href="/admin"
@@ -224,6 +230,12 @@ export default function MembersNav({
               className={linkClass("/members/events", "w-full rounded-lg px-4 py-3 text-center transition-colors")}
             >
               אירועים
+            </Link>
+            <Link
+              href="/members/battles"
+              className={linkClass("/members/battles", "w-full rounded-lg px-4 py-3 text-center transition-colors")}
+            >
+              קרבות בלימה
             </Link>
             {userRole === "admin" && (
               <Link
