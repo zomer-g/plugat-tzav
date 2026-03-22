@@ -110,11 +110,9 @@ export default function Navbar({ content = defaultContent }: NavbarProps) {
           </Link>
 
           <a
-            href={process.env.NEXT_PUBLIC_DONATION_URL || "#donate"}
-            target="_blank"
-            rel="noopener noreferrer"
+            href="#donate"
             className="rounded-full bg-olive px-5 py-2 text-sm font-bold text-white transition-colors hover:bg-olive-light"
-            aria-label="תרמו עכשיו — ניווט ראשי (נפתח בחלון חדש)"
+            aria-label="תרמו עכשיו — גלילה לאזור התרומות"
           >
             {content.donateText}
           </a>
@@ -176,11 +174,10 @@ export default function Navbar({ content = defaultContent }: NavbarProps) {
             </Link>
 
             <a
-              href={process.env.NEXT_PUBLIC_DONATION_URL || "#donate"}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#donate"
+              onClick={() => setMenuOpen(false)}
               className="mt-2 rounded-full bg-olive px-8 py-3 text-lg font-bold text-white transition-colors hover:bg-olive-light"
-              aria-label="תרמו עכשיו (נפתח בחלון חדש)"
+              aria-label="תרמו עכשיו — גלילה לאזור התרומות"
             >
               {content.donateText}
             </a>
