@@ -601,9 +601,7 @@ const DEFAULT_SITE_CONTENT: SiteContent = {
     buttonText: "תרמו עכשיו",
     secondaryButtonText: "צרו קשר לפרטים",
     taxNote: "התרומות מוכרות לצורכי מס. תודה על התמיכה!",
-    paymentLinks: [
-      { label: "PayBox", url: "", icon: "💳" },
-    ],
+    paymentLinks: [],
   },
   contact: {
     title: "צור קשר",
