@@ -3,6 +3,8 @@ import Footer from "@/components/Footer";
 import { getSiteContent, getPageLayout } from "@/lib/db";
 import { renderSection } from "@/lib/section-registry";
 
+export const dynamic = "force-dynamic";
+
 export default function Home() {
   const content = getSiteContent();
   const layout = getPageLayout("main");
