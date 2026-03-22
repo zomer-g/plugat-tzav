@@ -113,6 +113,7 @@ export interface SiteContent {
     buttonText: string;
     secondaryButtonText: string;
     taxNote: string;
+    paymentLinks: { label: string; url: string; icon: string }[];
   };
   contact: {
     title: string;
@@ -600,6 +601,9 @@ const DEFAULT_SITE_CONTENT: SiteContent = {
     buttonText: "תרמו עכשיו",
     secondaryButtonText: "צרו קשר לפרטים",
     taxNote: "התרומות מוכרות לצורכי מס. תודה על התמיכה!",
+    paymentLinks: [
+      { label: "PayBox", url: "", icon: "💳" },
+    ],
   },
   contact: {
     title: "צור קשר",

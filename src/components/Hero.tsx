@@ -39,11 +39,9 @@ export default function Hero({ content }: { content: SiteContent["hero"] }) {
 
         <div className="mt-4 flex flex-col gap-4 sm:flex-row">
           <a
-            href={process.env.NEXT_PUBLIC_DONATION_URL || "#donate"}
-            target="_blank"
-            rel="noopener noreferrer"
+            href="#donate"
             className="rounded-full bg-olive px-10 py-4 text-lg font-bold text-white shadow-lg transition-all hover:bg-olive-light hover:shadow-olive/30 hover:shadow-xl"
-            aria-label="תרמו עכשיו — כפתור ראשי (נפתח בחלון חדש)"
+            aria-label="תרמו עכשיו — גלילה לאזור התרומות"
           >
             {content.donateButtonText}
           </a>

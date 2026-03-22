@@ -341,9 +341,39 @@ function SectionEditor({ type, content, setContent, onSave, saving }: {
           <>
             <Field label="כותרת" value={content.donation.title} onChange={(v) => setContent({ ...content, donation: { ...content.donation, title: v } })} />
             <TextArea label="טקסט" value={content.donation.text} onChange={(v) => setContent({ ...content, donation: { ...content.donation, text: v } })} />
-            <Field label="טקסט כפתור ראשי" value={content.donation.buttonText} onChange={(v) => setContent({ ...content, donation: { ...content.donation, buttonText: v } })} />
             <Field label="טקסט כפתור משני" value={content.donation.secondaryButtonText} onChange={(v) => setContent({ ...content, donation: { ...content.donation, secondaryButtonText: v } })} />
             <Field label="הערת מס" value={content.donation.taxNote} onChange={(v) => setContent({ ...content, donation: { ...content.donation, taxNote: v } })} />
+            <div>
+              <label className={labelCls}>אמצעי תשלום</label>
+              <p className="mb-2 text-xs text-gray-500">הוסיפו קישורים לאמצעי תשלום שונים. הראשון יוצג ככפתור ראשי.</p>
+              {(content.donation.paymentLinks || []).map((link, idx) => (
+                <div key={idx} className="mb-2 grid grid-cols-[40px_1fr_1fr_30px] gap-2">
+                  <input value={link.icon} onChange={(e) => {
+                    const paymentLinks = [...(content.donation.paymentLinks || [])];
+                    paymentLinks[idx] = { ...paymentLinks[idx], icon: e.target.value };
+                    setContent({ ...content, donation: { ...content.donation, paymentLinks } });
+                  }} className={inputCls} placeholder="💳" />
+                  <input value={link.label} onChange={(e) => {
+                    const paymentLinks = [...(content.donation.paymentLinks || [])];
+                    paymentLinks[idx] = { ...paymentLinks[idx], label: e.target.value };
+                    setContent({ ...content, donation: { ...content.donation, paymentLinks } });
+                  }} className={inputCls} placeholder="שם (PayBox, ביט...)" dir="rtl" />
+                  <input value={link.url} onChange={(e) => {
+                    const paymentLinks = [...(content.donation.paymentLinks || [])];
+                    paymentLinks[idx] = { ...paymentLinks[idx], url: e.target.value };
+                    setContent({ ...content, donation: { ...content.donation, paymentLinks } });
+                  }} className={inputCls} placeholder="https://..." dir="ltr" />
+                  <button onClick={() => {
+                    const paymentLinks = (content.donation.paymentLinks || []).filter((_, i) => i !== idx);
+                    setContent({ ...content, donation: { ...content.donation, paymentLinks } });
+                  }} className="text-red-400 hover:text-red-300">✕</button>
+                </div>
+              ))}
+              <button onClick={() => {
+                const paymentLinks = [...(content.donation.paymentLinks || []), { label: "", url: "", icon: "💳" }];
+                setContent({ ...content, donation: { ...content.donation, paymentLinks } });
+              }} className="text-sm text-olive-light hover:underline">+ הוסף אמצעי תשלום</button>
+            </div>
           </>
         );
 
