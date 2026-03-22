@@ -75,7 +75,7 @@ export default function Impact({ content }: { content: SiteContent["impact"] }) 
           {content.title}
         </h2>
         <p className="mx-auto mb-16 max-w-2xl text-center text-gray-200">
-          המספרים מדברים בעד עצמם. הפלוגה גדלה ומתחזקת בזכותכם.
+          {content.subtitle}
         </p>
 
         <div className="grid grid-cols-2 gap-6 md:grid-cols-4">

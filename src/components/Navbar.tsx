@@ -4,17 +4,27 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import Link from "next/link";
+import type { SiteContent } from "@/lib/db";
 
-const navLinks = [
-  { href: "#about", label: "אודות" },
-  { href: "#impact", label: "השפעתנו" },
-  { href: "#gallery", label: "עדכונים" },
-  { href: "#timeline", label: "ציר הזמן" },
-  { href: "/members/events", label: "אירועים" },
-  { href: "#contact", label: "צור קשר" },
-];
+interface NavbarProps {
+  content?: SiteContent["navbar"];
+}
 
-export default function Navbar() {
+const defaultContent: SiteContent["navbar"] = {
+  links: [
+    { href: "#about", label: "אודות" },
+    { href: "#impact", label: "השפעתנו" },
+    { href: "#gallery", label: "עדכונים" },
+    { href: "#timeline", label: "ציר הזמן" },
+    { href: "/members/events", label: "אירועים" },
+    { href: "#contact", label: "צור קשר" },
+  ],
+  donateText: "תרמו עכשיו",
+  loginText: "התחברות",
+  membersText: "אזור אישי",
+};
+
+export default function Navbar({ content = defaultContent }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -81,7 +91,7 @@ export default function Navbar() {
         </a>
 
         <div className="hidden items-center gap-6 md:flex">
-          {navLinks.map((link) => (
+          {content.links.map((link) => (
             <a
               key={link.href}
               href={link.href}
@@ -96,7 +106,7 @@ export default function Navbar() {
             href={session ? "/members" : "/auth/signin"}
             className="rounded-full border border-sand/30 px-4 py-2 text-sm font-medium text-sand transition-colors hover:border-sand hover:bg-sand/10"
           >
-            {session ? "אזור אישי" : "התחברות"}
+            {session ? content.membersText : content.loginText}
           </Link>
 
           <a
@@ -106,7 +116,7 @@ export default function Navbar() {
             className="rounded-full bg-olive px-5 py-2 text-sm font-bold text-white transition-colors hover:bg-olive-light"
             aria-label="תרמו עכשיו — ניווט ראשי (נפתח בחלון חדש)"
           >
-            תרמו עכשיו
+            {content.donateText}
           </a>
         </div>
 
@@ -145,7 +155,7 @@ export default function Navbar() {
           className="bg-dark-bg/95 backdrop-blur-md md:hidden"
         >
           <div className="flex flex-col items-center gap-4 px-4 py-6">
-            {navLinks.map((link) => (
+            {content.links.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
@@ -162,7 +172,7 @@ export default function Navbar() {
               onClick={() => setMenuOpen(false)}
               className="rounded-full border border-sand/30 px-6 py-3 text-lg font-medium text-sand transition-colors hover:border-sand hover:bg-sand/10"
             >
-              {session ? "אזור אישי" : "התחברות"}
+              {session ? content.membersText : content.loginText}
             </Link>
 
             <a
@@ -172,7 +182,7 @@ export default function Navbar() {
               className="mt-2 rounded-full bg-olive px-8 py-3 text-lg font-bold text-white transition-colors hover:bg-olive-light"
               aria-label="תרמו עכשיו (נפתח בחלון חדש)"
             >
-              תרמו עכשיו
+              {content.donateText}
             </a>
           </div>
         </div>

@@ -1,33 +1,6 @@
-import type { TimelineEntry } from "@/lib/types";
+import type { SiteContent } from "@/lib/db";
 
-const entries: TimelineEntry[] = [
-  {
-    date: "2024",
-    title: "אימון קיץ מרכזי",
-    description:
-      "אימון מרוכז בן שבוע עם כל לוחמי הפלוגה, כולל תרגילי שטח ופעילויות גיבוש.",
-  },
-  {
-    date: "2023",
-    title: "מבצע חרבות ברזל",
-    description:
-      "הפלוגה גויסה במלואה ופעלה במסירות. לוחמינו הוכיחו מקצועיות ואחווה.",
-  },
-  {
-    date: "2022",
-    title: "כנס שנתי ומשפחות",
-    description:
-      "כנס מרגש שהפגיש לוחמים ומשפחות, עם הרצאות, פעילויות והוקרה.",
-  },
-  {
-    date: "2021",
-    title: "שדרוג ציוד הפלוגה",
-    description:
-      "בזכות תרומות נדיבות, שדרגנו את ציוד הפלוגה ושיפרנו את תנאי השירות.",
-  },
-];
-
-export default function Timeline() {
+export default function Timeline({ content }: { content: SiteContent["timeline"] }) {
   return (
     <section id="timeline" aria-labelledby="timeline-heading" className="bg-dark-surface py-20">
       <div className="mx-auto max-w-4xl px-4">
@@ -35,10 +8,10 @@ export default function Timeline() {
           id="timeline-heading"
           className="mb-4 text-center text-3xl font-bold text-sand md:text-4xl"
         >
-          ציר הזמן
+          {content.title}
         </h2>
         <p className="mx-auto mb-16 max-w-2xl text-center text-gray-200">
-          אבני דרך בסיפור הפלוגה שלנו.
+          {content.subtitle}
         </p>
 
         <div className="relative">
@@ -47,7 +20,7 @@ export default function Timeline() {
             aria-hidden="true"
           />
 
-          {entries.map((entry, i) => (
+          {content.entries.map((entry, i) => (
             <div
               key={i}
               className={`relative mb-12 flex items-start gap-8 ${

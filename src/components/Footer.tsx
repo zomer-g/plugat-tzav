@@ -1,6 +1,21 @@
 import Image from "next/image";
+import type { SiteContent } from "@/lib/db";
 
-export default function Footer() {
+interface FooterProps {
+  content?: SiteContent["footer"];
+}
+
+const defaultContent: SiteContent["footer"] = {
+  copyright: "פלוגת צב. כל הזכויות שמורות.",
+  links: [
+    { href: "#about", label: "אודות" },
+    { href: "#impact", label: "השפעתנו" },
+    { href: "#gallery", label: "עדכונים" },
+    { href: "#contact", label: "צור קשר" },
+  ],
+};
+
+export default function Footer({ content = defaultContent }: FooterProps) {
   return (
     <footer className="border-t border-slate-mil/20 bg-dark-bg py-12">
       <div className="mx-auto max-w-6xl px-4">
@@ -18,24 +33,21 @@ export default function Footer() {
 
           <nav aria-label="ניווט תחתון">
             <div className="flex gap-6 text-sm text-gray-200">
-              <a href="#about" className="px-1 py-2 transition-colors hover:text-sand">
-                אודות
-              </a>
-              <a href="#impact" className="px-1 py-2 transition-colors hover:text-sand">
-                השפעתנו
-              </a>
-              <a href="#gallery" className="px-1 py-2 transition-colors hover:text-sand">
-                עדכונים
-              </a>
-              <a href="#contact" className="px-1 py-2 transition-colors hover:text-sand">
-                צור קשר
-              </a>
+              {content.links.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="px-1 py-2 transition-colors hover:text-sand"
+                >
+                  {link.label}
+                </a>
+              ))}
             </div>
           </nav>
         </div>
 
         <div className="mt-8 text-center text-sm text-gray-300">
-          © {new Date().getFullYear()} פלוגת צב. כל הזכויות שמורות.
+          © {new Date().getFullYear()} {content.copyright}
         </div>
       </div>
     </footer>

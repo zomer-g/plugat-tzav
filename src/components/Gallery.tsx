@@ -1,7 +1,8 @@
 import { getAllUpdates } from "@/lib/markdown";
 import UpdateCard from "./UpdateCard";
+import type { SiteContent } from "@/lib/db";
 
-export default function Gallery() {
+export default function Gallery({ content }: { content: SiteContent["gallery"] }) {
   const updates = getAllUpdates();
 
   return (
@@ -11,10 +12,10 @@ export default function Gallery() {
           id="gallery-heading"
           className="mb-4 text-center text-3xl font-bold text-sand md:text-4xl"
         >
-          עדכונים ואירועים
+          {content.title}
         </h2>
         <p className="mx-auto mb-12 max-w-2xl text-center text-gray-200">
-          מה קורה בפלוגה? עדכונים, סיפורים ותמונות מהשטח.
+          {content.subtitle}
         </p>
 
         {updates.length > 0 ? (

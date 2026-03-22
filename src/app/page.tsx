@@ -1,16 +1,14 @@
 import Navbar from "@/components/Navbar";
-import Hero from "@/components/Hero";
-import About from "@/components/About";
-import Impact from "@/components/Impact";
-import Gallery from "@/components/Gallery";
-import Timeline from "@/components/Timeline";
-import Donation from "@/components/Donation";
-import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
-import { getSiteContent } from "@/lib/db";
+import { getSiteContent, getPageLayout } from "@/lib/db";
+import { renderSection } from "@/lib/section-registry";
 
 export default function Home() {
   const content = getSiteContent();
+  const layout = getPageLayout("main");
+  const sections = layout.sections
+    .filter((s) => s.enabled)
+    .sort((a, b) => a.order - b.order);
 
   return (
     <>
@@ -21,17 +19,13 @@ export default function Home() {
       >
         דלג לתוכן הראשי
       </a>
-      <Navbar />
+      <Navbar content={content.navbar} />
       <main id="main-content">
-        <Hero />
-        <About />
-        <Impact content={content.impact} />
-        <Gallery />
-        <Timeline />
-        <Donation />
-        <Contact />
+        {sections.map((section) => (
+          <div key={section.id}>{renderSection(section.type, content)}</div>
+        ))}
       </main>
-      <Footer />
+      <Footer content={content.footer} />
     </>
   );
 }

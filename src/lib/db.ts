@@ -93,25 +93,64 @@ export interface SiteContent {
     title: string;
     subtitle: string;
     description: string;
+    donateButtonText: string;
+    learnMoreButtonText: string;
   };
   about: {
     title: string;
     text: string;
-    values: string[];
+    values: { name: string; icon: string; description: string }[];
   };
   impact: {
     title: string;
+    subtitle: string;
     stats: { label: string; value: string; icon: string }[];
   };
   donation: {
     title: string;
     text: string;
+    buttonText: string;
+    secondaryButtonText: string;
+    taxNote: string;
   };
   contact: {
     title: string;
     text: string;
     email: string;
+    phoneText: string;
+    locationText: string;
   };
+  navbar: {
+    links: { href: string; label: string }[];
+    donateText: string;
+    loginText: string;
+    membersText: string;
+  };
+  footer: {
+    copyright: string;
+    links: { href: string; label: string }[];
+  };
+  timeline: {
+    title: string;
+    subtitle: string;
+    entries: { date: string; title: string; description: string }[];
+  };
+  gallery: {
+    title: string;
+    subtitle: string;
+  };
+}
+
+export interface PageSection {
+  id: string;
+  type: string;
+  enabled: boolean;
+  order: number;
+}
+
+export interface PageLayout {
+  pageId: string;
+  sections: PageSection[];
 }
 
 // ─── File helpers ────────────────────────────────────────────────────────
@@ -530,16 +569,23 @@ const DEFAULT_SITE_CONTENT: SiteContent = {
   hero: {
     title: "פלוגת צב",
     subtitle: "ביחד, תמיד מוכנים",
-    description:
-      "אנחנו חיילי מילואים, חברים, משפחה. יחד אנחנו שומרים על הבית ובונים קהילה חזקה.",
+    description: "אנחנו חיילי מילואים, חברים, משפחה. יחד אנחנו שומרים על הבית ובונים קהילה חזקה.",
+    donateButtonText: "תרמו עכשיו",
+    learnMoreButtonText: "למדו עוד",
   },
   about: {
     title: "אודות הפלוגה",
     text: "פלוגת צב היא יחידת מילואים שמפגישה לוחמים מכל רחבי הארץ. מאז הקמתה, הפלוגה מייצגת את הערכים של אחווה, מקצועיות ומחויבות למטרה.\n\nאנחנו לא רק חיילים — אנחנו חברים, שותפים, ומשפחה. כל אימון, כל פעילות, כל רגע יחד מחזק את הקשר שלנו ואת המוכנות שלנו.\n\nהתרומות שלכם מאפשרות לנו לשדרג ציוד, לארגן פעילויות גיבוש, ולתמוך בלוחמים ובמשפחותיהם.",
-    values: ["מקצועיות", "אחווה", "מחויבות", "חוסן"],
+    values: [
+      { name: "מקצועיות", icon: "🛡️", description: "רמה גבוהה של הכשרה ומוכנות" },
+      { name: "אחווה", icon: "🤝", description: "קשרים חזקים בין הלוחמים" },
+      { name: "מחויבות", icon: "🎯", description: "מסירות למשימה ולמדינה" },
+      { name: "חוסן", icon: "💪", description: "עמידות וכוח פנימי" },
+    ],
   },
   impact: {
     title: "השפעתנו",
+    subtitle: "המספרים מדברים בעד עצמם. הפלוגה גדלה ומתחזקת בזכותכם.",
     stats: [
       { label: "לוחמים פעילים", value: "120+", icon: "🛡️" },
       { label: "אימונים בשנה", value: "50+", icon: "🎯" },
@@ -550,21 +596,118 @@ const DEFAULT_SITE_CONTENT: SiteContent = {
   donation: {
     title: "עזרו לנו להמשיך",
     text: "כל תרומה עוזרת לנו לשדרג ציוד, לארגן פעילויות גיבוש, ולתמוך בלוחמים ובמשפחותיהם. ביחד אנחנו חזקים יותר.",
+    buttonText: "תרמו עכשיו",
+    secondaryButtonText: "צרו קשר לפרטים",
+    taxNote: "התרומות מוכרות לצורכי מס. תודה על התמיכה!",
   },
   contact: {
     title: "צור קשר",
     text: "רוצים לדעת עוד? לתרום? להצטרף? אנחנו כאן בשבילכם.",
     email: "contact@plugat-tzav.org",
+    phoneText: "ניתן ליצור קשר דרך האימייל",
+    locationText: "ישראל",
+  },
+  navbar: {
+    links: [
+      { href: "#about", label: "אודות" },
+      { href: "#impact", label: "השפעתנו" },
+      { href: "#gallery", label: "עדכונים" },
+      { href: "#timeline", label: "ציר הזמן" },
+      { href: "/members/events", label: "אירועים" },
+      { href: "#contact", label: "צור קשר" },
+    ],
+    donateText: "תרמו עכשיו",
+    loginText: "התחברות",
+    membersText: "אזור אישי",
+  },
+  footer: {
+    copyright: "פלוגת צב. כל הזכויות שמורות.",
+    links: [
+      { href: "#about", label: "אודות" },
+      { href: "#impact", label: "השפעתנו" },
+      { href: "#gallery", label: "עדכונים" },
+      { href: "#contact", label: "צור קשר" },
+    ],
+  },
+  timeline: {
+    title: "ציר הזמן",
+    subtitle: "אבני דרך בסיפור הפלוגה שלנו.",
+    entries: [
+      { date: "2024", title: "אימון קיץ מרכזי", description: "אימון מרוכז בן שבוע עם כל לוחמי הפלוגה, כולל תרגילי שטח ופעילויות גיבוש." },
+      { date: "2023", title: "מבצע חרבות ברזל", description: "הפלוגה גויסה במלואה ופעלה במסירות. לוחמינו הוכיחו מקצועיות ואחווה." },
+      { date: "2022", title: "כנס שנתי ומשפחות", description: "כנס מרגש שהפגיש לוחמים ומשפחות, עם הרצאות, פעילויות והוקרה." },
+      { date: "2021", title: "שדרוג ציוד הפלוגה", description: "בזכות תרומות נדיבות, שדרגנו את ציוד הפלוגה ושיפרנו את תנאי השירות." },
+    ],
+  },
+  gallery: {
+    title: "עדכונים ואירועים",
+    subtitle: "מה קורה בפלוגה? עדכונים, סיפורים ותמונות מהשטח.",
   },
 };
 
+const DEFAULT_PAGE_LAYOUTS: PageLayout[] = [
+  {
+    pageId: "main",
+    sections: [
+      { id: "hero", type: "hero", enabled: true, order: 0 },
+      { id: "about", type: "about", enabled: true, order: 1 },
+      { id: "impact", type: "impact", enabled: true, order: 2 },
+      { id: "gallery", type: "gallery", enabled: true, order: 3 },
+      { id: "timeline", type: "timeline", enabled: true, order: 4 },
+      { id: "donation", type: "donation", enabled: true, order: 5 },
+      { id: "contact", type: "contact", enabled: true, order: 6 },
+    ],
+  },
+];
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+function deepMerge(target: any, source: any): any {
+  if (!source) return target;
+  const result = { ...target };
+  for (const key of Object.keys(source)) {
+    const sv = source[key];
+    const tv = target[key];
+    if (sv && typeof sv === "object" && !Array.isArray(sv) && tv && typeof tv === "object" && !Array.isArray(tv)) {
+      result[key] = deepMerge(tv, sv);
+    } else if (sv !== undefined) {
+      result[key] = sv;
+    }
+  }
+  return result;
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
 export function getSiteContent(): SiteContent {
-  return readJson<SiteContent>("site-content.json", DEFAULT_SITE_CONTENT);
+  const stored = readJson<Record<string, unknown>>("site-content.json", {});
+  return deepMerge(DEFAULT_SITE_CONTENT, stored) as SiteContent;
 }
 
 export function updateSiteContent(updates: Partial<SiteContent>): SiteContent {
   const current = getSiteContent();
-  const merged = { ...current, ...updates };
+  const merged = deepMerge(current, updates);
   writeJson("site-content.json", merged);
   return merged;
+}
+
+// ─── Page Layouts ────────────────────────────────────────────────────────
+
+export function getPageLayout(pageId: string): PageLayout {
+  const layouts = readJson<PageLayout[]>("page-layouts.json", DEFAULT_PAGE_LAYOUTS);
+  const layout = layouts.find((l) => l.pageId === pageId);
+  if (layout) return layout;
+  const defaultLayout = DEFAULT_PAGE_LAYOUTS.find((l) => l.pageId === pageId);
+  return defaultLayout || { pageId, sections: [] };
+}
+
+export function updatePageLayout(pageId: string, sections: PageSection[]): PageLayout {
+  const layouts = readJson<PageLayout[]>("page-layouts.json", DEFAULT_PAGE_LAYOUTS);
+  const idx = layouts.findIndex((l) => l.pageId === pageId);
+  const layout: PageLayout = { pageId, sections };
+  if (idx === -1) {
+    layouts.push(layout);
+  } else {
+    layouts[idx] = layout;
+  }
+  writeJson("page-layouts.json", layouts);
+  return layout;
 }

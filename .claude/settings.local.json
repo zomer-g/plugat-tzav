@@ -25,7 +25,17 @@
       "Bash(ren \"logo.png.png\" \"logo.png\")",
       "Bash(ren \"logo-small.png.png\" \"logo-small.png\")",
       "Bash(mv \"logo.png.png\" \"logo.png\")",
-      "Bash(mv \"logo-small.png.png\" \"logo-small.png\")"
+      "Bash(mv \"logo-small.png.png\" \"logo-small.png\")",
+      "Bash(ls -la logo*)",
+      "Bash(magick --version)",
+      "Bash(npm list:*)",
+      "Bash(node scripts/remove-bg.mjs)",
+      "Bash(node scripts/import-events.mjs)",
+      "Bash(node scripts/generate-favicon.mjs)",
+      "Bash(find 'C:\\\\Users\\\\zomer\\\\CLAUDE CODE\\\\tzav\\\\src\\\\app\\\\api' -type f -name *.ts -o -name *.tsx)",
+      "Bash(nslookup -type=NS pluga.org.il)",
+      "Bash(nslookup -type=NS pluga.org.il 8.8.8.8)",
+      "Bash(ipconfig /flushdns)"
     ]
   }
 }

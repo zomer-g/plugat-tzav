@@ -1,17 +1,11 @@
-import { getSiteContent } from "@/lib/db";
+interface AboutContent {
+  title: string;
+  text: string;
+  values: { name: string; icon: string; description: string }[];
+}
 
-const VALUE_ICONS: Record<string, { icon: string; desc: string }> = {
-  "מקצועיות": { icon: "🛡️", desc: "רמה גבוהה של הכשרה ומוכנות" },
-  "אחווה": { icon: "🤝", desc: "קשרים חזקים בין הלוחמים" },
-  "מחויבות": { icon: "🎯", desc: "מסירות למשימה ולמדינה" },
-  "חוסן": { icon: "💪", desc: "עמידות וכוח פנימי" },
-};
-
-const DEFAULT_ICON = { icon: "⭐", desc: "" };
-
-export default function About() {
-  const content = getSiteContent();
-  const paragraphs = content.about.text.split("\n\n").filter(Boolean);
+export default function About({ content }: { content: AboutContent }) {
+  const paragraphs = content.text.split("\n\n").filter(Boolean);
 
   return (
     <section id="about" aria-labelledby="about-heading" className="bg-dark-surface py-20">
@@ -20,7 +14,7 @@ export default function About() {
           id="about-heading"
           className="mb-12 text-center text-3xl font-bold text-sand md:text-4xl"
         >
-          {content.about.title}
+          {content.title}
         </h2>
 
         <div className="grid gap-12 md:grid-cols-2">
@@ -33,18 +27,17 @@ export default function About() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {content.about.values.map((valueName) => {
-              const info = VALUE_ICONS[valueName] || DEFAULT_ICON;
+            {content.values.map((value) => {
               return (
                 <div
-                  key={valueName}
+                  key={value.name}
                   className="rounded-xl border border-olive/30 bg-dark-card p-6 text-center transition-colors hover:border-olive"
                 >
                   <span className="mb-3 block text-3xl" role="img" aria-hidden="true">
-                    {info.icon}
+                    {value.icon}
                   </span>
-                  <h3 className="mb-2 font-bold text-sand">{valueName}</h3>
-                  {info.desc && <p className="text-sm text-gray-200">{info.desc}</p>}
+                  <h3 className="mb-2 font-bold text-sand">{value.name}</h3>
+                  {value.description && <p className="text-sm text-gray-200">{value.description}</p>}
                 </div>
               );
             })}

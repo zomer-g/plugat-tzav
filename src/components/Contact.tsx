@@ -1,9 +1,8 @@
-import { getSiteContent } from "@/lib/db";
+import type { SiteContent } from "@/lib/db";
 
-export default function Contact() {
-  const content = getSiteContent();
+export default function Contact({ content }: { content: SiteContent["contact"] }) {
   const email =
-    process.env.NEXT_PUBLIC_CONTACT_EMAIL || content.contact.email;
+    process.env.NEXT_PUBLIC_CONTACT_EMAIL || content.email;
 
   return (
     <section id="contact" aria-labelledby="contact-heading" className="bg-dark-surface py-20">
@@ -12,10 +11,10 @@ export default function Contact() {
           id="contact-heading"
           className="mb-4 text-3xl font-bold text-sand md:text-4xl"
         >
-          {content.contact.title}
+          {content.title}
         </h2>
         <p className="mx-auto mb-12 max-w-xl text-gray-200">
-          {content.contact.text}
+          {content.text}
         </p>
 
         <div className="grid gap-8 md:grid-cols-3">
@@ -33,13 +32,13 @@ export default function Contact() {
           <div className="rounded-xl border border-slate-mil/20 bg-dark-card p-8">
             <div className="mb-4 text-3xl" role="img" aria-hidden="true">📱</div>
             <h3 className="mb-2 font-bold text-sand">טלפון</h3>
-            <p className="text-gray-200">ניתן ליצור קשר דרך האימייל</p>
+            <p className="text-gray-200">{content.phoneText}</p>
           </div>
 
           <div className="rounded-xl border border-slate-mil/20 bg-dark-card p-8">
             <div className="mb-4 text-3xl" role="img" aria-hidden="true">📍</div>
             <h3 className="mb-2 font-bold text-sand">מיקום</h3>
-            <p className="text-gray-200">ישראל</p>
+            <p className="text-gray-200">{content.locationText}</p>
           </div>
         </div>
       </div>

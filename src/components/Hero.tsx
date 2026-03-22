@@ -1,9 +1,7 @@
 import Image from "next/image";
-import { getSiteContent } from "@/lib/db";
+import type { SiteContent } from "@/lib/db";
 
-export default function Hero() {
-  const content = getSiteContent();
-
+export default function Hero({ content }: { content: SiteContent["hero"] }) {
   return (
     <section
       aria-labelledby="hero-heading"
@@ -31,12 +29,12 @@ export default function Hero() {
           id="hero-heading"
           className="max-w-3xl text-4xl font-black leading-tight text-white md:text-6xl"
         >
-          {content.hero.title}
-          <span className="mt-2 block text-sand">{content.hero.subtitle}</span>
+          {content.title}
+          <span className="mt-2 block text-sand">{content.subtitle}</span>
         </h1>
 
         <p className="max-w-xl text-lg leading-relaxed text-gray-200 md:text-xl">
-          {content.hero.description}
+          {content.description}
         </p>
 
         <div className="mt-4 flex flex-col gap-4 sm:flex-row">
@@ -47,13 +45,13 @@ export default function Hero() {
             className="rounded-full bg-olive px-10 py-4 text-lg font-bold text-white shadow-lg transition-all hover:bg-olive-light hover:shadow-olive/30 hover:shadow-xl"
             aria-label="תרמו עכשיו — כפתור ראשי (נפתח בחלון חדש)"
           >
-            תרמו עכשיו
+            {content.donateButtonText}
           </a>
           <a
             href="#about"
             className="rounded-full border-2 border-sand/50 px-10 py-4 text-lg font-bold text-sand transition-all hover:border-sand hover:bg-sand/10"
           >
-            למדו עוד
+            {content.learnMoreButtonText}
           </a>
         </div>
       </div>

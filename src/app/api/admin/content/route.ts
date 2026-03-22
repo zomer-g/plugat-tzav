@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
 
   // Validate that body contains at least one valid section
-  const validSections = ["hero", "about", "impact", "donation", "contact"];
+  const validSections = ["hero", "about", "impact", "donation", "contact", "navbar", "footer", "timeline", "gallery"];
   const providedSections = Object.keys(body).filter((k) => validSections.includes(k));
 
   if (providedSections.length === 0) {
