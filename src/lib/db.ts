@@ -2,9 +2,10 @@ import fs from "fs";
 import path from "path";
 
 // Simple JSON file-based database — no external DB needed
-// Data stored in data/users.json and data/groups.json and data/page-access.json
+// In production (Render), uses persistent disk at /opt/render/project/src/data
+// Locally, uses ./data relative to project root
 
-const DATA_DIR = path.join(process.cwd(), "data");
+const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
 
 function ensureDataDir() {
   if (!fs.existsSync(DATA_DIR)) {
