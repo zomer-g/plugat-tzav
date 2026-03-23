@@ -87,6 +87,10 @@ export default function SoldiersManagement() {
     setLng(soldier.coordinates?.lng.toString() || "");
     setEditingId(soldier.id);
     setShowForm(true);
+    // Scroll to form
+    setTimeout(() => {
+      document.getElementById("soldier-form")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -208,6 +212,7 @@ export default function SoldiersManagement() {
       {/* Form */}
       {showForm && (
         <form
+          id="soldier-form"
           onSubmit={handleSubmit}
           className="rounded-xl border border-dark-surface bg-dark-card p-6 space-y-4"
         >
