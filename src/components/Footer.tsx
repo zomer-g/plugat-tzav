@@ -46,8 +46,14 @@ export default function Footer({ content = defaultContent }: FooterProps) {
           </nav>
         </div>
 
-        <div className="mt-8 text-center text-sm text-gray-300">
-          © {new Date().getFullYear()} {content.copyright}
+        <div className="mt-8 flex flex-col items-center gap-2 text-center text-sm text-gray-300">
+          <a
+            href="/privacy"
+            className="text-gray-400 transition-colors hover:text-sand"
+          >
+            מדיניות פרטיות ונגישות
+          </a>
+          <span>© {new Date().getFullYear()} {content.copyright}</span>
         </div>
       </div>
     </footer>
