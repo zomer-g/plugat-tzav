@@ -1,10 +1,12 @@
 import { getUpdates } from "@/lib/db";
+import { getAllUpdates as getMdUpdates } from "@/lib/markdown";
 import UpdatesManagement from "./UpdatesManagement";
 
 export const dynamic = "force-dynamic";
 
 export default async function UpdatesPage() {
   const updates = getUpdates();
+  const mdUpdates = getMdUpdates();
 
   return (
     <div className="space-y-6">
@@ -14,7 +16,7 @@ export default async function UpdatesPage() {
           יצירה, עריכה ומחיקה של כרטיסי עדכונים ואירועים
         </p>
       </div>
-      <UpdatesManagement initialUpdates={updates} />
+      <UpdatesManagement initialUpdates={updates} markdownUpdates={mdUpdates} />
     </div>
   );
 }

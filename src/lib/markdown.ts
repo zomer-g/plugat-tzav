@@ -77,3 +77,29 @@ export function getAllUpdates(): UpdateMeta[] {
     .map((slug) => getUpdateMetaBySlug(slug))
     .sort((a, b) => (a.date > b.date ? -1 : 1));
 }
+
+export function getRawMarkdownUpdate(slug: string): { meta: UpdateMeta; content: string } {
+  validateSlug(slug);
+  const filePath = path.join(updatesDir, `${slug}.md`);
+  const fileContent = fs.readFileSync(filePath, "utf-8");
+  const { data, content } = matter(fileContent);
+  return {
+    meta: {
+      slug,
+      title: data.title || slug,
+      date: data.date || "",
+      excerpt: data.excerpt || "",
+      coverImage: validateCoverImage(data.coverImage),
+      tags: data.tags,
+    },
+    content,
+  };
+}
+
+export function deleteMarkdownUpdate(slug: string): boolean {
+  validateSlug(slug);
+  const filePath = path.join(updatesDir, `${slug}.md`);
+  if (!fs.existsSync(filePath)) return false;
+  fs.unlinkSync(filePath);
+  return true;
+}
