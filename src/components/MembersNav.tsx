@@ -54,6 +54,12 @@ export default function MembersNav({
 
         {/* Profile dropdown */}
         <div className="flex items-center gap-3">
+          <a
+            href="/#donate"
+            className="rounded-full bg-olive px-4 py-2 text-sm font-bold text-white transition-colors hover:bg-olive-light"
+          >
+            תרמו עכשיו
+          </a>
           {userRole === "admin" && (
             <Link
               href="/admin"
