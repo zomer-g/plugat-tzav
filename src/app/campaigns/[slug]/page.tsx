@@ -7,13 +7,7 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateStaticParams() {
-  const campaigns = getCampaigns();
-  return campaigns.map((c) => ({ slug: c.slug }));
-}
-
-export const dynamicParams = true;
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 
 export default async function CampaignPage({ params }: Props) {
   const { slug } = await params;

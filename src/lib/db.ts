@@ -1016,9 +1016,30 @@ export function updateSiteContent(updates: Partial<SiteContent>): SiteContent {
 export function getPageLayout(pageId: string): PageLayout {
   const layouts = readJson<PageLayout[]>("page-layouts.json", DEFAULT_PAGE_LAYOUTS);
   const layout = layouts.find((l) => l.pageId === pageId);
-  if (layout) return layout;
   const defaultLayout = DEFAULT_PAGE_LAYOUTS.find((l) => l.pageId === pageId);
-  return defaultLayout || { pageId, sections: [] };
+
+  if (!layout) return defaultLayout || { pageId, sections: [] };
+
+  // Auto-merge: add new default sections that don't exist in stored layout
+  if (defaultLayout) {
+    const existingTypes = new Set(layout.sections.map((s) => s.type));
+    const maxOrder = Math.max(0, ...layout.sections.map((s) => s.order));
+    let newOrder = maxOrder + 1;
+    let changed = false;
+    for (const defSection of defaultLayout.sections) {
+      if (!existingTypes.has(defSection.type)) {
+        layout.sections.push({ ...defSection, order: newOrder++, enabled: true });
+        changed = true;
+      }
+    }
+    if (changed) {
+      const idx = layouts.findIndex((l) => l.pageId === pageId);
+      if (idx !== -1) layouts[idx] = layout;
+      writeJson("page-layouts.json", layouts);
+    }
+  }
+
+  return layout;
 }
 
 export function updatePageLayout(pageId: string, sections: PageSection[]): PageLayout {

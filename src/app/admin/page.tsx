@@ -205,6 +205,15 @@ export default async function AdminDashboard() {
             עריכת הטקסטים והתוכן המוצג בעמוד הראשי של האתר.
           </p>
         </Link>
+        <Link
+          href="/admin/guide"
+          className="rounded-xl border border-sand/30 bg-dark-card p-6 transition-all hover:border-sand hover:shadow-lg"
+        >
+          <h2 className="mb-2 text-xl font-bold text-sand">📖 מדריך למנהל</h2>
+          <p className="text-sm text-gray-400">
+            הוראות שימוש מפורטות לכל הכלים והתכונות באתר.
+          </p>
+        </Link>
       </div>
 
       {/* Recent users */}
