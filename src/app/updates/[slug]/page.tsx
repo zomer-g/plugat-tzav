@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getUpdateBySlug as getMdUpdate, getUpdateSlugs } from "@/lib/markdown";
 import { getUpdateBySlug as getDbUpdate, getUpdates } from "@/lib/db";
 import { remark } from "remark";
 import remarkHtml from "remark-html";
@@ -13,19 +12,10 @@ export const dynamic = "force-dynamic";
 type Params = Promise<{ slug: string }>;
 
 export function generateStaticParams() {
-  const mdSlugs = getUpdateSlugs().map((slug) => ({ slug }));
-  const dbSlugs = getUpdates().map((u) => ({ slug: u.slug }));
-  return [...mdSlugs, ...dbSlugs];
+  return getUpdates().map((u) => ({ slug: u.slug }));
 }
 
 async function resolveUpdate(slug: string): Promise<Update | null> {
-  // Try markdown first
-  try {
-    return await getMdUpdate(slug);
-  } catch {
-    // noop
-  }
-  // Try DB
   const dbUpdate = getDbUpdate(slug);
   if (dbUpdate) {
     const processed = await remark().use(remarkGfm).use(remarkHtml, { sanitize: true }).process(dbUpdate.content || "");

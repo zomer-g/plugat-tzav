@@ -35,7 +35,10 @@
       "Bash(find 'C:\\\\Users\\\\zomer\\\\CLAUDE CODE\\\\tzav\\\\src\\\\app\\\\api' -type f -name *.ts -o -name *.tsx)",
       "Bash(nslookup -type=NS pluga.org.il)",
       "Bash(nslookup -type=NS pluga.org.il 8.8.8.8)",
-      "Bash(ipconfig /flushdns)"
+      "Bash(ipconfig /flushdns)",
+      "WebFetch(domain:barak-188.com)",
+      "Bash(pandoc \"C:\\\\Users\\\\zomer\\\\Downloads\\\\שדרוג אתר חיילי מילואים במלחמת חרבות ברזל.docx\" -t markdown --wrap=none)",
+      "Bash(python3 -c \":*)"
     ]
   }
 }
