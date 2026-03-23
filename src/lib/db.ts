@@ -111,6 +111,24 @@ export interface ActivityLog {
   timestamp: string;
 }
 
+export interface DbCampaign {
+  id: string;
+  slug: string;
+  title: string;
+  description: string;
+  image?: string;
+  goal: number;
+  raised: number;
+  currency: string;
+  startDate: string;
+  endDate?: string;
+  paymentLinks: { label: string; url: string; icon: string }[];
+  active: boolean;
+  shareText?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type PageAccessLevel = "public" | "members" | "groups";
 
 export interface PageAccess {
@@ -171,6 +189,16 @@ export interface SiteContent {
   gallery: {
     title: string;
     subtitle: string;
+  };
+  impactDashboard: {
+    title: string;
+    subtitle: string;
+    totalGoal: number;
+    totalRaised: number;
+    currency: string;
+    categories: { name: string; amount: number; color: string; icon: string }[];
+    recentDonations: { name: string; amount: number; date: string; message?: string }[];
+    stats: { label: string; value: string; icon: string }[];
   };
 }
 
@@ -912,6 +940,30 @@ const DEFAULT_SITE_CONTENT: SiteContent = {
     title: "עדכונים ואירועים",
     subtitle: "מה קורה בפלוגה? עדכונים, סיפורים ותמונות מהשטח.",
   },
+  impactDashboard: {
+    title: "ההשפעה שלנו",
+    subtitle: "שקיפות מלאה — כך התרומות שלכם עושות שינוי אמיתי",
+    totalGoal: 100000,
+    totalRaised: 67500,
+    currency: "₪",
+    categories: [
+      { name: "ציוד לחימה", amount: 30000, color: "#556B2F", icon: "🛡️" },
+      { name: "רווחת הלוחם", amount: 20000, color: "#D4C89A", icon: "🏠" },
+      { name: "תמיכה במשפחות", amount: 10000, color: "#708090", icon: "👨‍👩‍👧‍👦" },
+      { name: "אירועי גיבוש", amount: 7500, color: "#8B7355", icon: "🤝" },
+    ],
+    recentDonations: [
+      { name: "אנונימי", amount: 500, date: "2024-12-15", message: "בהצלחה לוחמים!" },
+      { name: "משפחת כהן", amount: 1000, date: "2024-12-10" },
+      { name: "אנונימי", amount: 250, date: "2024-12-08", message: "גאים בכם" },
+    ],
+    stats: [
+      { label: "לוחמים שנתמכו", value: "65", icon: "🪖" },
+      { label: "אירועים שמומנו", value: "12", icon: "📅" },
+      { label: "משפחות שנעזרו", value: "30", icon: "👨‍👩‍👧" },
+      { label: "תורמים", value: "180", icon: "❤️" },
+    ],
+  },
 };
 
 const DEFAULT_PAGE_LAYOUTS: PageLayout[] = [
@@ -923,8 +975,9 @@ const DEFAULT_PAGE_LAYOUTS: PageLayout[] = [
       { id: "impact", type: "impact", enabled: true, order: 2 },
       { id: "gallery", type: "gallery", enabled: true, order: 3 },
       { id: "timeline", type: "timeline", enabled: true, order: 4 },
-      { id: "donation", type: "donation", enabled: true, order: 5 },
-      { id: "contact", type: "contact", enabled: true, order: 6 },
+      { id: "impactDashboard", type: "impactDashboard", enabled: true, order: 5 },
+      { id: "donation", type: "donation", enabled: true, order: 6 },
+      { id: "contact", type: "contact", enabled: true, order: 7 },
     ],
   },
 ];
@@ -979,4 +1032,51 @@ export function updatePageLayout(pageId: string, sections: PageSection[]): PageL
   }
   writeJson("page-layouts.json", layouts);
   return layout;
+}
+
+// ─── Campaigns ────────────────────────────────────────────────────────
+
+export function getCampaigns(): DbCampaign[] {
+  return readJson<DbCampaign[]>("campaigns.json", []);
+}
+
+export function getCampaignBySlug(slug: string): DbCampaign | undefined {
+  return getCampaigns().find((c) => c.slug === slug);
+}
+
+export function getCampaignById(id: string): DbCampaign | undefined {
+  return getCampaigns().find((c) => c.id === id);
+}
+
+export function createCampaign(data: Omit<DbCampaign, "id" | "createdAt" | "updatedAt">): DbCampaign {
+  const campaigns = getCampaigns();
+  const campaign: DbCampaign = {
+    ...data,
+    id: crypto.randomUUID(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  campaigns.push(campaign);
+  writeJson("campaigns.json", campaigns);
+  return campaign;
+}
+
+export function updateCampaign(
+  id: string,
+  updates: Partial<Omit<DbCampaign, "id" | "createdAt">>
+): DbCampaign | null {
+  const campaigns = getCampaigns();
+  const idx = campaigns.findIndex((c) => c.id === id);
+  if (idx === -1) return null;
+  campaigns[idx] = { ...campaigns[idx], ...updates, updatedAt: new Date().toISOString() };
+  writeJson("campaigns.json", campaigns);
+  return campaigns[idx];
+}
+
+export function deleteCampaign(id: string): boolean {
+  const campaigns = getCampaigns();
+  const filtered = campaigns.filter((c) => c.id !== id);
+  if (filtered.length === campaigns.length) return false;
+  writeJson("campaigns.json", filtered);
+  return true;
 }

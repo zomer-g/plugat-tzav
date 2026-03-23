@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getUsers, getGroups, getPageAccess, getEvents, getActivityLogs, getPrivacyPolicy, getSoldiers } from "@/lib/db";
+import { getUsers, getGroups, getPageAccess, getEvents, getActivityLogs, getPrivacyPolicy, getSoldiers, getCampaigns } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +9,7 @@ export default async function AdminDashboard() {
   const pages = getPageAccess();
   const events = getEvents();
   const soldiers = getSoldiers();
+  const campaigns = getCampaigns();
   const logs = getActivityLogs();
   const policy = getPrivacyPolicy();
   const consentedCount = users.filter(
@@ -50,6 +51,13 @@ export default async function AdminDashboard() {
       icon: "🪖",
       href: "/admin/soldiers",
       color: "slate-mil",
+    },
+    {
+      label: "קמפיינים",
+      value: campaigns.length,
+      icon: "🎯",
+      href: "/admin/campaigns",
+      color: "sand",
     },
     {
       label: "רשומות יומן",
@@ -150,6 +158,15 @@ export default async function AdminDashboard() {
           <h2 className="mb-2 text-xl font-bold text-sand">🪖 ניהול חיילים</h2>
           <p className="text-sm text-gray-400">
             צפייה, עריכה והוספת חיילים לרשימת הפלוגה — כולל מיקום על המפה.
+          </p>
+        </Link>
+        <Link
+          href="/admin/campaigns"
+          className="rounded-xl border border-dark-surface bg-dark-card p-6 transition-all hover:border-sand hover:shadow-lg"
+        >
+          <h2 className="mb-2 text-xl font-bold text-sand">🎯 ניהול קמפיינים</h2>
+          <p className="text-sm text-gray-400">
+            יצירה וניהול קמפיינים לגיוס תרומות — כולל עמודים ציבוריים לשיתוף.
           </p>
         </Link>
         <Link

@@ -17,6 +17,7 @@ const SECTION_TYPES: SectionMeta[] = [
   { type: "timeline", label: "ציר הזמן", icon: "📅" },
   { type: "donation", label: "תרומות", icon: "💰" },
   { type: "contact", label: "צור קשר", icon: "📧" },
+  { type: "impactDashboard", label: "דשבורד השפעה", icon: "📊" },
   { type: "navbar", label: "ניווט עליון", icon: "🔗" },
   { type: "footer", label: "כותרת תחתונה", icon: "📋" },
 ];
@@ -113,7 +114,7 @@ export default function ContentManagement({ initialContent, initialLayout }: Pro
 
   const usedTypes = new Set(layout.sections.map((s) => s.type));
   const availableTypes = SECTION_TYPES.filter((t) =>
-    !usedTypes.has(t.type) && ["hero", "about", "impact", "gallery", "timeline", "donation", "contact"].includes(t.type)
+    !usedTypes.has(t.type) && ["hero", "about", "impact", "gallery", "timeline", "donation", "contact", "impactDashboard"].includes(t.type)
   );
 
   return (
@@ -498,6 +499,133 @@ function SectionEditor({ type, content, setContent, onSave, saving }: {
                 const links = [...content.footer.links, { href: "#", label: "" }];
                 setContent({ ...content, footer: { ...content.footer, links } });
               }} className="text-sm text-olive-light hover:underline">+ הוסף קישור</button>
+            </div>
+          </>
+        );
+
+      case "impactDashboard":
+        return (
+          <>
+            <Field label="כותרת" value={content.impactDashboard.title} onChange={(v) => setContent({ ...content, impactDashboard: { ...content.impactDashboard, title: v } })} />
+            <Field label="כותרת משנה" value={content.impactDashboard.subtitle} onChange={(v) => setContent({ ...content, impactDashboard: { ...content.impactDashboard, subtitle: v } })} />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={labelCls}>יעד כולל</label>
+                <input type="number" value={content.impactDashboard.totalGoal} onChange={(e) => setContent({ ...content, impactDashboard: { ...content.impactDashboard, totalGoal: Number(e.target.value) } })} className={inputCls} dir="ltr" />
+              </div>
+              <div>
+                <label className={labelCls}>סה&quot;כ שנאסף</label>
+                <input type="number" value={content.impactDashboard.totalRaised} onChange={(e) => setContent({ ...content, impactDashboard: { ...content.impactDashboard, totalRaised: Number(e.target.value) } })} className={inputCls} dir="ltr" />
+              </div>
+            </div>
+            <Field label="מטבע" value={content.impactDashboard.currency} onChange={(v) => setContent({ ...content, impactDashboard: { ...content.impactDashboard, currency: v } })} dir="ltr" />
+
+            {/* Categories */}
+            <div>
+              <label className={labelCls}>קטגוריות</label>
+              {content.impactDashboard.categories.map((cat, idx) => (
+                <div key={idx} className="mb-2 grid grid-cols-[40px_1fr_80px_70px_30px] gap-2">
+                  <input value={cat.icon} onChange={(e) => {
+                    const categories = [...content.impactDashboard.categories];
+                    categories[idx] = { ...categories[idx], icon: e.target.value };
+                    setContent({ ...content, impactDashboard: { ...content.impactDashboard, categories } });
+                  }} className={inputCls} placeholder="🛡️" />
+                  <input value={cat.name} onChange={(e) => {
+                    const categories = [...content.impactDashboard.categories];
+                    categories[idx] = { ...categories[idx], name: e.target.value };
+                    setContent({ ...content, impactDashboard: { ...content.impactDashboard, categories } });
+                  }} className={inputCls} placeholder="שם" dir="rtl" />
+                  <input type="number" value={cat.amount} onChange={(e) => {
+                    const categories = [...content.impactDashboard.categories];
+                    categories[idx] = { ...categories[idx], amount: Number(e.target.value) };
+                    setContent({ ...content, impactDashboard: { ...content.impactDashboard, categories } });
+                  }} className={inputCls} dir="ltr" />
+                  <input type="color" value={cat.color} onChange={(e) => {
+                    const categories = [...content.impactDashboard.categories];
+                    categories[idx] = { ...categories[idx], color: e.target.value };
+                    setContent({ ...content, impactDashboard: { ...content.impactDashboard, categories } });
+                  }} className="h-[38px] w-full cursor-pointer rounded-lg border border-dark-surface bg-dark-bg" />
+                  <button onClick={() => {
+                    const categories = content.impactDashboard.categories.filter((_, i) => i !== idx);
+                    setContent({ ...content, impactDashboard: { ...content.impactDashboard, categories } });
+                  }} className="text-red-400 hover:text-red-300">✕</button>
+                </div>
+              ))}
+              <button onClick={() => {
+                const categories = [...content.impactDashboard.categories, { name: "", amount: 0, color: "#556B2F", icon: "⭐" }];
+                setContent({ ...content, impactDashboard: { ...content.impactDashboard, categories } });
+              }} className="text-sm text-olive-light hover:underline">+ הוסף קטגוריה</button>
+            </div>
+
+            {/* Recent Donations */}
+            <div>
+              <label className={labelCls}>תרומות אחרונות</label>
+              {content.impactDashboard.recentDonations.map((don, idx) => (
+                <div key={idx} className="mb-3 rounded-lg bg-dark-bg p-3 space-y-2">
+                  <div className="grid grid-cols-[1fr_80px_100px_30px] gap-2">
+                    <input value={don.name} onChange={(e) => {
+                      const recentDonations = [...content.impactDashboard.recentDonations];
+                      recentDonations[idx] = { ...recentDonations[idx], name: e.target.value };
+                      setContent({ ...content, impactDashboard: { ...content.impactDashboard, recentDonations } });
+                    }} className={inputCls} placeholder="שם" dir="rtl" />
+                    <input type="number" value={don.amount} onChange={(e) => {
+                      const recentDonations = [...content.impactDashboard.recentDonations];
+                      recentDonations[idx] = { ...recentDonations[idx], amount: Number(e.target.value) };
+                      setContent({ ...content, impactDashboard: { ...content.impactDashboard, recentDonations } });
+                    }} className={inputCls} dir="ltr" />
+                    <input type="date" value={don.date} onChange={(e) => {
+                      const recentDonations = [...content.impactDashboard.recentDonations];
+                      recentDonations[idx] = { ...recentDonations[idx], date: e.target.value };
+                      setContent({ ...content, impactDashboard: { ...content.impactDashboard, recentDonations } });
+                    }} className={inputCls} />
+                    <button onClick={() => {
+                      const recentDonations = content.impactDashboard.recentDonations.filter((_, i) => i !== idx);
+                      setContent({ ...content, impactDashboard: { ...content.impactDashboard, recentDonations } });
+                    }} className="text-red-400 hover:text-red-300">✕</button>
+                  </div>
+                  <input value={don.message || ""} onChange={(e) => {
+                    const recentDonations = [...content.impactDashboard.recentDonations];
+                    recentDonations[idx] = { ...recentDonations[idx], message: e.target.value || undefined };
+                    setContent({ ...content, impactDashboard: { ...content.impactDashboard, recentDonations } });
+                  }} className={inputCls} placeholder="הודעה (אופציונלי)" dir="rtl" />
+                </div>
+              ))}
+              <button onClick={() => {
+                const recentDonations = [...content.impactDashboard.recentDonations, { name: "אנונימי", amount: 0, date: new Date().toISOString().split("T")[0] }];
+                setContent({ ...content, impactDashboard: { ...content.impactDashboard, recentDonations } });
+              }} className="text-sm text-olive-light hover:underline">+ הוסף תרומה</button>
+            </div>
+
+            {/* Stats */}
+            <div>
+              <label className={labelCls}>נתונים סטטיסטיים</label>
+              {content.impactDashboard.stats.map((stat, idx) => (
+                <div key={idx} className="mb-2 grid grid-cols-[40px_1fr_80px_30px] gap-2">
+                  <input value={stat.icon} onChange={(e) => {
+                    const stats = [...content.impactDashboard.stats];
+                    stats[idx] = { ...stats[idx], icon: e.target.value };
+                    setContent({ ...content, impactDashboard: { ...content.impactDashboard, stats } });
+                  }} className={inputCls} />
+                  <input value={stat.label} onChange={(e) => {
+                    const stats = [...content.impactDashboard.stats];
+                    stats[idx] = { ...stats[idx], label: e.target.value };
+                    setContent({ ...content, impactDashboard: { ...content.impactDashboard, stats } });
+                  }} className={inputCls} dir="rtl" placeholder="תווית" />
+                  <input value={stat.value} onChange={(e) => {
+                    const stats = [...content.impactDashboard.stats];
+                    stats[idx] = { ...stats[idx], value: e.target.value };
+                    setContent({ ...content, impactDashboard: { ...content.impactDashboard, stats } });
+                  }} className={inputCls} dir="ltr" placeholder="ערך" />
+                  <button onClick={() => {
+                    const stats = content.impactDashboard.stats.filter((_, i) => i !== idx);
+                    setContent({ ...content, impactDashboard: { ...content.impactDashboard, stats } });
+                  }} className="text-red-400 hover:text-red-300">✕</button>
+                </div>
+              ))}
+              <button onClick={() => {
+                const stats = [...content.impactDashboard.stats, { label: "", value: "", icon: "⭐" }];
+                setContent({ ...content, impactDashboard: { ...content.impactDashboard, stats } });
+              }} className="text-sm text-olive-light hover:underline">+ הוסף נתון</button>
             </div>
           </>
         );

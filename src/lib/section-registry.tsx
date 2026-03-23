@@ -6,6 +6,7 @@ import Gallery from "@/components/Gallery";
 import Timeline from "@/components/Timeline";
 import Donation from "@/components/Donation";
 import Contact from "@/components/Contact";
+import ImpactDashboard from "@/components/ImpactDashboard";
 
 export interface SectionMeta {
   type: string;
@@ -21,6 +22,7 @@ export const SECTION_TYPES: SectionMeta[] = [
   { type: "timeline", label: "ציר הזמן", icon: "📅" },
   { type: "donation", label: "תרומות", icon: "💰" },
   { type: "contact", label: "צור קשר", icon: "📧" },
+  { type: "impactDashboard", label: "דשבורד השפעה", icon: "📊" },
 ];
 
 export function getSectionMeta(type: string): SectionMeta {
@@ -43,6 +45,8 @@ export function renderSection(type: string, content: SiteContent): React.ReactNo
       return <Donation content={content.donation} />;
     case "contact":
       return <Contact content={content.contact} />;
+    case "impactDashboard":
+      return <ImpactDashboard content={content.impactDashboard} />;
     default:
       return null;
   }
