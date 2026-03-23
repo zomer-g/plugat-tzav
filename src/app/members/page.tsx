@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { getUserByEmail, getGroups } from "@/lib/db";
+import { getUserByEmail, getGroups, canUserAccessPage } from "@/lib/db";
 import Link from "next/link";
 
 export default async function MembersHome() {
@@ -8,12 +8,17 @@ export default async function MembersHome() {
   const groups = getGroups();
   const userGroups = groups.filter((g) => user?.groups.includes(g.id));
 
-  const navTiles = [
-    { href: "/members/documents", icon: "📄", title: "מסמכים", description: "מסמכים ותכנים לחברי הפלוגה" },
-    { href: "/members/gallery", icon: "🖼️", title: "גלריה פנימית", description: "תמונות וסרטונים מפעילויות" },
-    { href: "/members/events", icon: "📅", title: "אירועי הפלוגה", description: "אירועים על מפה וציר זמן" },
-    { href: "/members/battles", icon: "⚔️", title: "קרבות בלימה", description: "סיפור הקרבות של הפלוגה" },
+  const allTiles = [
+    { href: "/members/documents", pageId: "members/documents", icon: "📄", title: "מסמכים", description: "מסמכים ותכנים לחברי הפלוגה" },
+    { href: "/members/gallery", pageId: "members/gallery", icon: "🖼️", title: "גלריה פנימית", description: "תמונות וסרטונים מפעילויות" },
+    { href: "/members/events", pageId: "members/events", icon: "📅", title: "אירועי הפלוגה", description: "אירועים על מפה וציר זמן" },
+    { href: "/members/battles", pageId: "members/battles", icon: "⚔️", title: "קרבות בלימה", description: "סיפור הקרבות של הפלוגה" },
   ];
+
+  // Only show tiles the user has permission to access
+  const navTiles = allTiles.filter((tile) =>
+    canUserAccessPage(user?.email || null, tile.pageId)
+  );
 
   return (
     <div className="space-y-8">
