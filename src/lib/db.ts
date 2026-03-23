@@ -242,6 +242,18 @@ const DEFAULT_PAGE_ACCESS: PageAccess[] = [
     allowedGroups: [],
   },
   {
+    pageId: "members/brigade",
+    label: "חטיבה 188",
+    level: "members",
+    allowedGroups: [],
+  },
+  {
+    pageId: "members/tools",
+    label: "כלים שימושיים",
+    level: "members",
+    allowedGroups: [],
+  },
+  {
     pageId: "events",
     label: "אירועי הפלוגה — תצוגה",
     level: "public",
