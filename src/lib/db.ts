@@ -55,6 +55,19 @@ export interface DbGroup {
   createdAt: string;
 }
 
+export interface DbUpdate {
+  id: string;
+  slug: string;
+  title: string;
+  date: string;
+  excerpt: string;
+  content: string; // markdown content
+  coverImage?: string;
+  tags: string[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type EventType = "training" | "operational" | "social" | "uniform";
 
 export interface DbEvent {
@@ -479,6 +492,80 @@ export function deleteEvent(id: string): boolean {
   const filtered = events.filter((e) => e.id !== id);
   if (filtered.length === events.length) return false;
   writeJson("events.json", filtered);
+  return true;
+}
+
+// ─── Updates (Blog Posts) ────────────────────────────────────────────────
+
+export function getUpdates(): DbUpdate[] {
+  return readJson<DbUpdate[]>("updates.json", []);
+}
+
+export function getUpdateBySlug(slug: string): DbUpdate | undefined {
+  return getUpdates().find((u) => u.slug === slug);
+}
+
+export function getUpdateById(id: string): DbUpdate | undefined {
+  return getUpdates().find((u) => u.id === id);
+}
+
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\u0590-\u05FF\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 80);
+}
+
+export function createUpdate(data: {
+  title: string;
+  date: string;
+  excerpt: string;
+  content: string;
+  coverImage?: string;
+  tags?: string[];
+}): DbUpdate {
+  const updates = getUpdates();
+  let slug = slugify(data.title);
+  // Ensure unique slug
+  if (updates.some((u) => u.slug === slug)) {
+    slug = slug + "-" + Date.now().toString(36);
+  }
+  const update: DbUpdate = {
+    id: crypto.randomUUID(),
+    slug,
+    title: data.title,
+    date: data.date,
+    excerpt: data.excerpt,
+    content: data.content,
+    coverImage: data.coverImage,
+    tags: data.tags || [],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  updates.push(update);
+  writeJson("updates.json", updates);
+  return update;
+}
+
+export function updateUpdate(
+  id: string,
+  updates: Partial<Omit<DbUpdate, "id" | "createdAt">>
+): DbUpdate | null {
+  const all = getUpdates();
+  const idx = all.findIndex((u) => u.id === id);
+  if (idx === -1) return null;
+  all[idx] = { ...all[idx], ...updates, updatedAt: new Date().toISOString() };
+  writeJson("updates.json", all);
+  return all[idx];
+}
+
+export function deleteUpdate(id: string): boolean {
+  const updates = getUpdates();
+  const filtered = updates.filter((u) => u.id !== id);
+  if (filtered.length === updates.length) return false;
+  writeJson("updates.json", filtered);
   return true;
 }
 

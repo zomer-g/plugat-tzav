@@ -1,12 +1,45 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { getUpdateBySlug, getUpdateSlugs } from "@/lib/markdown";
+import { getUpdateBySlug as getMdUpdate, getUpdateSlugs } from "@/lib/markdown";
+import { getUpdateBySlug as getDbUpdate, getUpdates } from "@/lib/db";
+import { remark } from "remark";
+import remarkHtml from "remark-html";
+import remarkGfm from "remark-gfm";
 import type { Metadata } from "next";
+import type { Update } from "@/lib/types";
+
+export const dynamic = "force-dynamic";
 
 type Params = Promise<{ slug: string }>;
 
 export function generateStaticParams() {
-  return getUpdateSlugs().map((slug) => ({ slug }));
+  const mdSlugs = getUpdateSlugs().map((slug) => ({ slug }));
+  const dbSlugs = getUpdates().map((u) => ({ slug: u.slug }));
+  return [...mdSlugs, ...dbSlugs];
+}
+
+async function resolveUpdate(slug: string): Promise<Update | null> {
+  // Try markdown first
+  try {
+    return await getMdUpdate(slug);
+  } catch {
+    // noop
+  }
+  // Try DB
+  const dbUpdate = getDbUpdate(slug);
+  if (dbUpdate) {
+    const processed = await remark().use(remarkGfm).use(remarkHtml, { sanitize: true }).process(dbUpdate.content || "");
+    return {
+      slug: dbUpdate.slug,
+      title: dbUpdate.title,
+      date: dbUpdate.date,
+      excerpt: dbUpdate.excerpt,
+      coverImage: dbUpdate.coverImage,
+      tags: dbUpdate.tags,
+      htmlContent: processed.toString(),
+    };
+  }
+  return null;
 }
 
 export async function generateMetadata({
@@ -15,15 +48,12 @@ export async function generateMetadata({
   params: Params;
 }): Promise<Metadata> {
   const { slug } = await params;
-  try {
-    const update = await getUpdateBySlug(slug);
-    return {
-      title: `${update.title} | פלוגת צב`,
-      description: update.excerpt,
-    };
-  } catch {
-    return { title: "לא נמצא | פלוגת צב" };
-  }
+  const update = await resolveUpdate(slug);
+  if (!update) return { title: "לא נמצא | פלוגת צב" };
+  return {
+    title: `${update.title} | פלוגת צב`,
+    description: update.excerpt,
+  };
 }
 
 export default async function UpdatePage({
@@ -33,12 +63,8 @@ export default async function UpdatePage({
 }) {
   const { slug } = await params;
 
-  let update;
-  try {
-    update = await getUpdateBySlug(slug);
-  } catch {
-    notFound();
-  }
+  const update = await resolveUpdate(slug);
+  if (!update) notFound();
 
   return (
     <div className="min-h-screen bg-dark-bg">

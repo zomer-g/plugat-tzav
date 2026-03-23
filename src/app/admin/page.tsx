@@ -136,6 +136,15 @@ export default async function AdminDashboard() {
           </p>
         </Link>
         <Link
+          href="/admin/updates"
+          className="rounded-xl border border-dark-surface bg-dark-card p-6 transition-all hover:border-olive hover:shadow-lg"
+        >
+          <h2 className="mb-2 text-xl font-bold text-sand">📰 ניהול עדכונים</h2>
+          <p className="text-sm text-gray-400">
+            יצירה, עריכה ומחיקה של כרטיסי עדכונים ואירועים באתר.
+          </p>
+        </Link>
+        <Link
           href="/admin/logs"
           className="rounded-xl border border-dark-surface bg-dark-card p-6 transition-all hover:border-sand hover:shadow-lg"
         >

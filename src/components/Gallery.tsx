@@ -1,9 +1,25 @@
 import { getAllUpdates } from "@/lib/markdown";
 import UpdateCard from "./UpdateCard";
 import type { SiteContent } from "@/lib/db";
+import { getUpdates } from "@/lib/db";
+import type { UpdateMeta } from "@/lib/types";
 
 export default function Gallery({ content }: { content: SiteContent["gallery"] }) {
-  const updates = getAllUpdates();
+  // Merge markdown-based updates with DB-based updates
+  const mdUpdates = getAllUpdates();
+  const dbUpdates = getUpdates();
+  const dbAsMeta: UpdateMeta[] = dbUpdates.map((u) => ({
+    slug: u.slug,
+    title: u.title,
+    date: u.date,
+    excerpt: u.excerpt,
+    coverImage: u.coverImage,
+    tags: u.tags,
+  }));
+  const allUpdates = [...mdUpdates, ...dbAsMeta].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+  const updates = allUpdates;
 
   return (
     <section id="gallery" aria-labelledby="gallery-heading" className="py-20">
