@@ -90,17 +90,7 @@ export default function Navbar({ content = defaultContent }: NavbarProps) {
           <span className="text-lg font-bold text-sand">פלוגת צב</span>
         </a>
 
-        <div className="hidden items-center gap-6 md:flex">
-          {content.links.map((link) => (
-            <a
-              key={link.href}
-              href={link.href}
-              className="px-2 py-3 text-sm font-medium text-gray-200 transition-colors hover:text-sand"
-            >
-              {link.label}
-            </a>
-          ))}
-
+        <div className="hidden items-center gap-4 md:flex">
           {/* Members area link */}
           <Link
             href={session ? "/members" : "/auth/signin"}
@@ -153,17 +143,6 @@ export default function Navbar({ content = defaultContent }: NavbarProps) {
           className="bg-dark-bg/95 backdrop-blur-md md:hidden"
         >
           <div className="flex flex-col items-center gap-4 px-4 py-6">
-            {content.links.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                onClick={() => setMenuOpen(false)}
-                className="px-4 py-3 text-lg font-medium text-gray-200 transition-colors hover:text-sand"
-              >
-                {link.label}
-              </a>
-            ))}
-
             {/* Members area link (mobile) */}
             <Link
               href={session ? "/members" : "/auth/signin"}
