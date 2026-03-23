@@ -1,6 +1,6 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
-import { getUserByEmail, createUser, updateUser } from "@/lib/db";
+import { getUserByEmail, createUser, updateUser, getSoldiers } from "@/lib/db";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -15,11 +15,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Auto-register user on first login
       const existing = getUserByEmail(user.email);
       if (!existing) {
-        createUser({
+        const newUser = createUser({
           email: user.email,
           name: user.name || "",
           image: user.image || "",
         });
+        // Auto-assign "soldiers" group if email matches a soldier record
+        const soldiers = getSoldiers();
+        const matchingSoldier = soldiers.find(
+          (s) => s.email?.toLowerCase() === user.email!.toLowerCase()
+        );
+        if (matchingSoldier && !newUser.groups.includes("soldiers")) {
+          updateUser(newUser.id, { groups: [...newUser.groups, "soldiers"] });
+        }
       } else {
         // If ADMIN_EMAIL matches, ensure they are admin (handles data resets)
         const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();

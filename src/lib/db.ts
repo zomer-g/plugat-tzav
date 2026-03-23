@@ -84,6 +84,24 @@ export interface DbEvent {
   updatedAt: string;
 }
 
+export interface DbSoldier {
+  id: string;
+  name: string;
+  personalId: string;
+  role: string;
+  phone?: string;
+  email?: string;
+  region?: string;
+  city?: string;
+  address?: string;
+  birthDate?: string;
+  serviceEndDate?: string;
+  unitJoinDate?: string;
+  coordinates?: { lat: number; lng: number };
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ActivityLog {
   id: string;
   userId: string;
@@ -262,6 +280,18 @@ const DEFAULT_PAGE_ACCESS: PageAccess[] = [
   {
     pageId: "admin/events",
     label: "ניהול אירועים",
+    level: "members",
+    allowedGroups: [],
+  },
+  {
+    pageId: "members/agenda",
+    label: "אג'נדה",
+    level: "members",
+    allowedGroups: [],
+  },
+  {
+    pageId: "members/soldiers-map",
+    label: "מפת חיילים",
     level: "members",
     allowedGroups: [],
   },
@@ -516,6 +546,131 @@ export function deleteEvent(id: string): boolean {
   const filtered = events.filter((e) => e.id !== id);
   if (filtered.length === events.length) return false;
   writeJson("events.json", filtered);
+  return true;
+}
+
+// ─── City Coordinates ─────────────────────────────────────────────────────
+
+const CITY_COORDINATES: Record<string, { lat: number; lng: number }> = {
+  "תל אביב-יפו": { lat: 32.0853, lng: 34.7818 },
+  "תל אביב": { lat: 32.0853, lng: 34.7818 },
+  "ירושלים": { lat: 31.7683, lng: 35.2137 },
+  "חיפה": { lat: 32.7940, lng: 34.9896 },
+  "באר שבע": { lat: 31.2530, lng: 34.7915 },
+  "ראשון לציון": { lat: 31.9730, lng: 34.7925 },
+  "פתח תקווה": { lat: 32.0841, lng: 34.8878 },
+  "אשדוד": { lat: 31.8014, lng: 34.6435 },
+  "נתניה": { lat: 32.3215, lng: 34.8532 },
+  "חולון": { lat: 32.0114, lng: 34.7748 },
+  "בני ברק": { lat: 32.0834, lng: 34.8340 },
+  "רמת גן": { lat: 32.0680, lng: 34.8241 },
+  "אשקלון": { lat: 31.6688, lng: 34.5743 },
+  "בת ים": { lat: 32.0171, lng: 34.7513 },
+  "הרצליה": { lat: 32.1629, lng: 34.8446 },
+  "כפר סבא": { lat: 32.1750, lng: 34.9066 },
+  "רעננה": { lat: 32.1836, lng: 34.8710 },
+  "הוד השרון": { lat: 32.1526, lng: 34.8932 },
+  "מודיעין-מכבים-רעות": { lat: 31.8969, lng: 35.0104 },
+  "מודיעין": { lat: 31.8969, lng: 35.0104 },
+  "רחובות": { lat: 31.8928, lng: 34.8113 },
+  "נס ציונה": { lat: 31.9292, lng: 34.7953 },
+  "לוד": { lat: 31.9514, lng: 34.8957 },
+  "רמלה": { lat: 31.9275, lng: 34.8625 },
+  "עפולה": { lat: 32.6087, lng: 35.2917 },
+  "נצרת": { lat: 32.6996, lng: 35.3035 },
+  "טבריה": { lat: 32.7922, lng: 35.5312 },
+  "עכו": { lat: 32.9272, lng: 35.0764 },
+  "נהריה": { lat: 33.0064, lng: 35.0982 },
+  "קריית שמונה": { lat: 33.2070, lng: 35.5710 },
+  "אילת": { lat: 29.5577, lng: 34.9519 },
+  "דימונה": { lat: 31.0662, lng: 35.0334 },
+  "ערד": { lat: 31.2555, lng: 35.2128 },
+  "קריית גת": { lat: 31.6061, lng: 34.7648 },
+  "קריית ביאליק": { lat: 32.8328, lng: 35.0839 },
+  "קריית מוצקין": { lat: 32.8389, lng: 35.0720 },
+  "קריית אתא": { lat: 32.8090, lng: 35.1070 },
+  "קריית ים": { lat: 32.8456, lng: 35.0687 },
+  "יבנה": { lat: 31.8787, lng: 34.7389 },
+  "אור יהודה": { lat: 32.0286, lng: 34.8520 },
+  "גבעתיים": { lat: 32.0719, lng: 34.8108 },
+  "כפר יונה": { lat: 32.3169, lng: 34.9361 },
+  "רמת השרון": { lat: 32.1461, lng: 34.8393 },
+  "צפת": { lat: 32.9646, lng: 35.4960 },
+  "שדרות": { lat: 31.5250, lng: 34.5956 },
+  "נתיבות": { lat: 31.4216, lng: 34.5881 },
+  "אופקים": { lat: 31.3137, lng: 34.6183 },
+  "יהוד-מונוסון": { lat: 32.0327, lng: 34.8813 },
+  "יהוד": { lat: 32.0327, lng: 34.8813 },
+  "גבעת שמואל": { lat: 32.0767, lng: 34.8494 },
+  "פרדס חנה-כרכור": { lat: 32.4726, lng: 34.9712 },
+  "טירת כרמל": { lat: 32.7600, lng: 34.9700 },
+  "זכרון יעקב": { lat: 32.5716, lng: 34.9533 },
+  "כרמיאל": { lat: 32.9126, lng: 35.3013 },
+  "מגדל העמק": { lat: 32.6764, lng: 35.2419 },
+  "אור עקיבא": { lat: 32.5045, lng: 34.9200 },
+  "קיסריה": { lat: 32.4996, lng: 34.8956 },
+  "גדרה": { lat: 31.8123, lng: 34.7788 },
+  "בית שמש": { lat: 31.7470, lng: 34.9871 },
+  "מעלה אדומים": { lat: 31.7756, lng: 35.3070 },
+};
+
+export function getCityCoordinates(city: string): { lat: number; lng: number } | undefined {
+  if (!city) return undefined;
+  const trimmed = city.trim();
+  return CITY_COORDINATES[trimmed];
+}
+
+// ─── Soldiers ─────────────────────────────────────────────────────────────
+
+export function getSoldiers(): DbSoldier[] {
+  return readJson<DbSoldier[]>("soldiers.json", []);
+}
+
+export function getSoldierById(id: string): DbSoldier | undefined {
+  return getSoldiers().find((s) => s.id === id);
+}
+
+export function getSoldierByEmail(email: string): DbSoldier | undefined {
+  return getSoldiers().find((s) => s.email?.toLowerCase() === email.toLowerCase());
+}
+
+export function createSoldier(data: Omit<DbSoldier, "id" | "createdAt" | "updatedAt">): DbSoldier {
+  const soldiers = getSoldiers();
+  const coords = data.coordinates || (data.city ? getCityCoordinates(data.city) : undefined);
+  const soldier: DbSoldier = {
+    ...data,
+    coordinates: coords,
+    id: crypto.randomUUID(),
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  soldiers.push(soldier);
+  writeJson("soldiers.json", soldiers);
+  return soldier;
+}
+
+export function updateSoldier(
+  id: string,
+  updates: Partial<Omit<DbSoldier, "id" | "createdAt">>
+): DbSoldier | null {
+  const soldiers = getSoldiers();
+  const idx = soldiers.findIndex((s) => s.id === id);
+  if (idx === -1) return null;
+  // Auto-resolve coordinates from city if city changed and no explicit coordinates given
+  if (updates.city && !updates.coordinates) {
+    const coords = getCityCoordinates(updates.city);
+    if (coords) updates.coordinates = coords;
+  }
+  soldiers[idx] = { ...soldiers[idx], ...updates, updatedAt: new Date().toISOString() };
+  writeJson("soldiers.json", soldiers);
+  return soldiers[idx];
+}
+
+export function deleteSoldier(id: string): boolean {
+  const soldiers = getSoldiers();
+  const filtered = soldiers.filter((s) => s.id !== id);
+  if (filtered.length === soldiers.length) return false;
+  writeJson("soldiers.json", filtered);
   return true;
 }
 

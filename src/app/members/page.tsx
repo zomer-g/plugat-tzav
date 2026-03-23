@@ -15,6 +15,8 @@ export default async function MembersHome() {
     { href: "/members/documents", pageId: "members/documents", icon: "📄", title: "מסמכים", description: "תכנים לחברי הפלוגה", color: "from-cyan-900/40 to-cyan-800/20" },
     { href: "/members/brigade", pageId: "members/brigade", icon: "🛡️", title: "חטיבה 188", description: "עמותת ברק", color: "from-amber-900/40 to-amber-800/20" },
     { href: "/members/tools", pageId: "members/tools", icon: "🔧", title: "כלים שימושיים", description: "קישורים למילואימניקים", color: "from-green-900/40 to-green-800/20" },
+    { href: "/members/agenda", pageId: "members/agenda", icon: "📆", title: "אג'נדה", description: "ימי הולדת, אירועים קרובים", color: "from-indigo-900/40 to-indigo-800/20" },
+    { href: "/members/soldiers-map", pageId: "members/soldiers-map", icon: "📍", title: "מפת חיילים", description: "חיילי הפלוגה על המפה", color: "from-teal-900/40 to-teal-800/20" },
   ];
 
   const navTiles = allTiles.filter((tile) =>

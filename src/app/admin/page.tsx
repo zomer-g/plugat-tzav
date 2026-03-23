@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { getUsers, getGroups, getPageAccess, getEvents, getActivityLogs, getPrivacyPolicy } from "@/lib/db";
+import { getUsers, getGroups, getPageAccess, getEvents, getActivityLogs, getPrivacyPolicy, getSoldiers } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -8,6 +8,7 @@ export default async function AdminDashboard() {
   const groups = getGroups();
   const pages = getPageAccess();
   const events = getEvents();
+  const soldiers = getSoldiers();
   const logs = getActivityLogs();
   const policy = getPrivacyPolicy();
   const consentedCount = users.filter(
@@ -42,6 +43,13 @@ export default async function AdminDashboard() {
       icon: "📅",
       href: "/admin/events",
       color: "olive",
+    },
+    {
+      label: "חיילים",
+      value: soldiers.length,
+      icon: "🪖",
+      href: "/admin/soldiers",
+      color: "slate-mil",
     },
     {
       label: "רשומות יומן",
@@ -133,6 +141,15 @@ export default async function AdminDashboard() {
           <h2 className="mb-2 text-xl font-bold text-sand">📅 ניהול אירועים</h2>
           <p className="text-sm text-gray-400">
             הוספה ועריכה של אירועים, אימונים ופעילויות — כולל מיקום על המפה.
+          </p>
+        </Link>
+        <Link
+          href="/admin/soldiers"
+          className="rounded-xl border border-dark-surface bg-dark-card p-6 transition-all hover:border-olive hover:shadow-lg"
+        >
+          <h2 className="mb-2 text-xl font-bold text-sand">🪖 ניהול חיילים</h2>
+          <p className="text-sm text-gray-400">
+            צפייה, עריכה והוספת חיילים לרשימת הפלוגה — כולל מיקום על המפה.
           </p>
         </Link>
         <Link
