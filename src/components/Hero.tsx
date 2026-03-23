@@ -15,13 +15,14 @@ export default function Hero({ content }: { content: SiteContent["hero"] }) {
       </div>
 
       <div className="relative z-10 flex flex-col items-center gap-8">
-        <div className="relative h-48 w-48 md:h-64 md:w-64">
+        <div className="relative h-48 w-48 overflow-hidden md:h-64 md:w-64">
           <Image
             src="/logo.png"
             alt="סמל פלוגת צב"
             fill
             className="object-contain drop-shadow-2xl"
             priority
+            style={{ border: "none", outline: "none" }}
           />
         </div>
 
