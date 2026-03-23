@@ -404,7 +404,19 @@ export function deleteGroup(id: string): boolean {
 // ─── Page Access ─────────────────────────────────────────────────────────
 
 export function getPageAccess(): PageAccess[] {
-  return readJson<PageAccess[]>("page-access.json", DEFAULT_PAGE_ACCESS);
+  const stored = readJson<PageAccess[]>("page-access.json", DEFAULT_PAGE_ACCESS);
+  // Auto-merge any new default pages that don't exist in stored data
+  let changed = false;
+  for (const defaultPage of DEFAULT_PAGE_ACCESS) {
+    if (!stored.some((p) => p.pageId === defaultPage.pageId)) {
+      stored.push(defaultPage);
+      changed = true;
+    }
+  }
+  if (changed) {
+    writeJson("page-access.json", stored);
+  }
+  return stored;
 }
 
 export function getPageAccessByPageId(pageId: string): PageAccess | undefined {
