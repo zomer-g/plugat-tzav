@@ -56,7 +56,10 @@ export async function POST(req: NextRequest) {
     currency: String(currency || "₪").slice(0, 10),
     startDate: String(startDate),
     endDate: endDate ? String(endDate) : undefined,
-    paymentLinks: Array.isArray(paymentLinks) ? paymentLinks : [],
+    paymentLinks: Array.isArray(paymentLinks) ? paymentLinks.filter((l: { url?: string }) => {
+      try { const u = new URL(String(l.url || "")); return ["http:", "https:"].includes(u.protocol); }
+      catch { return false; }
+    }) : [],
     active: Boolean(active),
     shareText: shareText ? String(shareText).slice(0, 500) : undefined,
   });

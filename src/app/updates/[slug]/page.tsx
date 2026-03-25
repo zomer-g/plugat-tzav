@@ -4,6 +4,7 @@ import { getUpdateBySlug as getDbUpdate, getUpdates } from "@/lib/db";
 import { remark } from "remark";
 import remarkHtml from "remark-html";
 import remarkGfm from "remark-gfm";
+import createDOMPurify from "isomorphic-dompurify";
 import type { Metadata } from "next";
 import type { Update } from "@/lib/types";
 
@@ -105,7 +106,7 @@ export default async function UpdatePage({
 
         <div
           className="prose-rtl prose prose-invert mt-8 max-w-none prose-headings:text-sand prose-a:text-olive-light prose-strong:text-white"
-          dangerouslySetInnerHTML={{ __html: update.htmlContent }}
+          dangerouslySetInnerHTML={{ __html: createDOMPurify.sanitize(update.htmlContent) }}
         />
       </article>
     </div>

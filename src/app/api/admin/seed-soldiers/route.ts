@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getUserByEmail, getSoldiers, createSoldier } from "@/lib/db";
 
@@ -10,82 +10,20 @@ function convertDate(ddmmyyyy: string): string {
   return `${yyyy}-${mm.padStart(2, "0")}-${dd.padStart(2, "0")}`;
 }
 
-const CSV_DATA = [
-  ["אביב דו רם","8148332","3 טען","054-7229801","ramaviv3@gmail.com","מרכז","הוד השרון","גלגל המזלות 58","27/02/1996","18/11/2017","11/11/2020"],
-  ["אביעד ברהולץ","7532970","3 טען","054-6509656","aviadber93@gmail.com","יהודה ושומרון","אלקנה","אלף המגן 6","24/10/1993","24/07/2016","11/11/2020"],
-  ["אביעד קאפח","7645235","4 נהג","052-8530395","avladkapach@gmail.com","דרום","אשקלון","הקיקיון 4","27/06/1994","27/07/2015","11/11/2020"],
-  ["אביתר קושניר","8066464","3 טען","050-8444640","EVYATAR116@GMAIL.COM","צפון","שאר ישוב","","16/04/1994","","11/11/2020"],
-  ["אהרן אוריאל","8187163","2 תותחן","058-4455324","Bilhahes@gmail.com","יהודה ושומרון","קדומים","גלעד 8","07/08/1996","08/07/2023","15/10/2023"],
-  ["אוהד עליאש","7588998","2 תותחן","054-9458188","ELIAS.OHAD@GMAIL.COM","יהודה ושומרון","מחנה יתיר","מחנה יתיר","30/04/1993","22/12/2016","11/11/2020"],
-  ["אורי ממן","5794916","3 טען","052-3419342","ORI1MAMAN@GMAIL.COM","יהודה ושומרון","נגוהות","נגוהות","21/08/1995","22/12/2016","11/11/2020"],
-  ["אוריאל מלמד","8030537","3 טען","054-4911343","urielmelamed1@gmail.COM","ירושלים","בית שמש","נפתלי 105","03/01/1995","22/07/2017","11/11/2020"],
-  ["אחיה קל אלכסנדר","7532970","1 מט\"ק","054-2151195","achiya06@gmail.com","מרכז","לוד","הרצל 12","15/02/1993","08/03/2017","11/11/2020"],
-  ["איליי שוע","8026180","2 תותחן","050-4743219","ILAYSHUA@HOTMAIL.COM","מרכז","כפר סבא","המפלס 6","18/02/1995","24/07/2016","11/11/2020"],
-  ["איתי ווקנין","8727180","","053-5202964","","דרום","דימונה","המעלה 31","29/12/2002","07/09/2023","10/12/2023"],
-  ["אלחנן ישראלי","8442234","3 טען","058-7997118","elchis100@gmail.com","יהודה ושומרון","אלון מורה","נווה תרצה 293","13/11/1998","09/07/2023","10/12/2023"],
-  ["אליסף מנחם","6072322","1 מט\"ק","054-7336384","ELYASAFM08@GMAIL.COM","יהודה ושומרון","מעלה עמוס","שב איבי הנחל","30/11/1993","26/02/2018","14/11/2022"],
-  ["אליקים טובול","7582452","1 מ\"מ","052-6244038","ELYAKIM11@gmail.COM","יהודה ושומרון","אפרת","התאנה","25/05/1993","14/03/2018","18/08/2021"],
-  ["אסף אביעזר","8088066","4 נהג","052-7336004","WALL@9874563211995A.COM","צפון","נהלל","נהלל","04/08/1995","20/11/2016","11/11/2020"],
-  ["אפק לוינסון","7532931","1 רס\"פ","050-7988092","OMLI@NIREL.ORG.IL","דרום","אילת","","10/02/1993","28/07/2014","11/11/2020"],
-  ["אראל חי כהן","7639783","4 נהג","050-8756532","erelco1@gmail.com","ירושלים","ירושלים","בן טבאי 5","20/07/1994","24/07/2016","11/11/2020"],
-  ["ארי זיוון","8103061","3 טען","054-9251591","zeevon95@gmail.com","יהודה ושומרון","דולב","דולב","01/08/1995","15/07/2018","11/11/2020"],
-  ["אריאל סיוון","7640858","2 תותחן","054-2677308","ARIELCVAN@WALLA.COM","צפון","שדה אילן","אסיף 12","13/07/1994","13/07/2016","11/11/2020"],
-  ["בן בלאיש","8055069","3 טען","054-2281863","BEN.BALLAISHE@GMAIL.COM","צפון","מגדל העמק","נחל הצבי 63","12/04/1996","18/11/2017","21/12/2022"],
-  ["גיא זומר","5315251","נאמן כ\"א","054-7650202","ZOMERG@GMAIL.COM","תל אביב","תל אביב-יפו","שיינקין 42","03/12/1985","17/03/2008","11/11/2020"],
-  ["גלעד פימיאנטה","8707543","1 מט\"ק","058-4411887","GILADPIMI@GMAIL.COM","דרום","בני דקלים","פה נוף 9","02/08/2000","26/10/2023","11/05/2023"],
-  ["גלעד צ'יניאו","8827548","2 תותחן","055-6661518","giladtc@gmail.com","מרכז","רעננה","קצין 7","10/11/2001","07/04/2024","05/08/2024"],
-  ["דניאל לוין","9446462","4 נהג","055-6661520","levinadamdaniel1@gmail.com","ירושלים","ירושלים","גנרל קניג פייר 19","21/11/2000","11/09/2022","10/12/2023"],
-  ["חכמת חבקה","","","050-6612129","HEKMAT1X1@GMAIL.COM","","","","","","11/11/2020"],
-  ["טל דור","8011860","4 נהג","050-7661543","td305@walla.com","מרכז","גבעת שמואל","יצחק שמיר 10","20/12/1994","24/07/2016","11/11/2020"],
-  ["יאיר שמ גלינסקי","7581771","2 תותחן","052-6571120","y.s.galinsky@gmail.com","מרכז","גבעת שמואל","הנשיא 2","09/05/1993","22/12/2016","11/11/2020"],
-  ["יגל שמואל","5811835","סרס\"פ","050-7832267","YAGEL_S@WALLA.COM","יהודה ושומרון","מגדלים","מגדלים 1","11/04/1992","20/11/2016","11/11/2020"],
-  ["יהב מזרחי","204585380","מכונאי","052-4628068","Yahav619@gmail.com","צפון","עין העמק","עין העמק 0","30/08/1993","09/07/2016","11/11/2020"],
-  ["יהודה טוויל","8773473","3 טען","055-6661519","Yehudatawil49@gmail.com","ירושלים","ירושלים","רבדים 22","26/09/2001","07/11/2024","05/05/2024"],
-  ["יהודה נאה","5947472","1 מט\"ק","052-6122133","liranravi@gmail.com","יהודה ושומרון","משכיות","משניות","17/12/1988","26/02/2014","11/11/2020"],
-  ["יהונתן סדקה","8656320","קשפ\"ל","050-3099091","yonatan937@gmail.com","צפון","קרית טבעון","הורדים 6","10/12/2000","22/11/2022","11/02/2023"],
-  ["יואב מסילתי","7526450","1 מ\"מ","054-4645948","yoavmesi@gmail.com","מרכז","כוכב יאיר","בארי 9","18/12/1992","","05/12/2023"],
-  ["יואל אמיתי","5868188","1 מ\"פ","054-5208681","JOELAMITAI1@GMAIL.COM","מרכז","יקום","קום","29/02/1992","14/04/2017","17/11/2020"],
-  ["ישראלי אוסטרבך","7541194","4 נהג","054-8022355","YISRAELOSTER@GMAIL.COM","מרכז","כפר סבא","העמק 48","16/03/1993","09/07/2016","11/11/2020"],
-  ["לביא שטילר","8033178","3 טען","052-8791804","Shtilerlavi03@gmail.com","יהודה ושומרון","נעמה","","23/12/1994","24/07/2016","11/11/2020"],
-  ["לירון שרעבי","8165482","4 נהג","050-3669623","LIRON1996S@GMAIL.COM","דרום","אשדוד","ענבים 4","28/06/1996","25/07/2018","11/11/2020"],
-  ["מיכאל נחמיאס","5663426","1 מט\"ק","050-8898871","roniarieli94@gmail.com","מרכז","נתניה","אסתר המלכה 7","17/04/1994","20/11/2016","11/11/2020"],
-  ["נבות קציר","7596478","סרס\"פ","054-5750728","navotkatzir@gmail.com","צפון","משגב עם","משגב עם","14/07/1993","27/07/2015","11/11/2020"],
-  ["ניב אוחנה","8132944","2 תותחן","053-4283877","NIVOHANA3@WALLA.COM","צפון","עכו","אסתר ראב 4","28/11/1995","08/04/2017","11/11/2020"],
-  ["ניב ברקאי","8028532","2 תותחן","052-5013991","nivbarkai@gmail.com","דרום","חצרים","חצרים","25/03/1995","20/11/2016","11/11/2020"],
-  ["עודד זרקה","7425537","1 רס\"פ","058-5348348","ODEDZARKA@GMAIL.COM","צפון","עין שמר","עין שמר","27/05/1985","17/03/2008","11/11/2020"],
-  ["עוז יעקובי","7560682","1 מ\"מ","052-4438202","Ozyakv@gmail.com","מרכז","רחובות","ברוך שפינוזה 23","14/02/1993","26/11/2016","10/10/2023"],
-  ["עידו יעקב","8088166","4 נהג","050-5865864","IDOXV27@WALLA.COM","דרום","באר שבע","","","","11/11/2020"],
-  ["עידו נדב","7529417","נאמן כ\"א","052-5903565","IDONADAV4@GMAIL.COM","תל אביב","תל אביב-יפו","בלוך דוד 17","07/02/1993","27/07/2015","11/11/2020"],
-  ["עמינדב גרבובסקי","8776869","3 טען","050-4774749","","יהודה ושומרון","שדמות מחולה","שדמות מחולה","15/02/2001","14/10/2025","10/10/2023"],
-  ["עמית בז'ה","","","050-2725125","AMITBEJA@GMAIL.COM","","","","","","11/11/2020"],
-  ["עקיבא הד","7641092","4 נהג","052-4483562","akivahed@gmail.com","תל אביב","הרצליה","סוקולוב 93","03/08/1994","24/07/2016","11/11/2020"],
-  ["רון פנח בוקובזה","8064822","סרס\"פ","052-6761244","bokobzaron@gmail.com","דרום","מיתר","כובשים 23","17/05/1995","20/11/2016","11/11/2020"],
-  ["רועי אריה","8063268","2 תותחן","052-6788022","roie.arie444@gmail.com","צפון","חיפה","","","","11/11/2020"],
-  ["רועי עזראי","8064741","2 תותחן","052-5244664","ROIAZRAI@GMAIL.COM","דרום","באר שבע","הזז חיים 2","13/05/1995","24/07/2016","11/11/2020"],
-  ["שגיא סרף","8039117","1 מחט\"פ","052-8541711","SAGISARAF@GMAIL.COM","צפון","מעלות-תרשיחא","אודם 53","17/11/1994","01/08/2017","11/11/2020"],
-  ["שלמה נחושתן","8409667","4 נהג","058-6722105","Shlomon4@gmail.com","יהודה ושומרון","בית אל","האולפנא","23/08/1998","01/10/2023","10/10/2023"],
-  ["שרון פינק","7540404","4 נהג","054-7335620","SHARONFINK3@GMAIL.COM","מרכז","רחובות","הרב מלצר 4","14/03/1993","28/07/2014","11/11/2020"],
-  ["תמיר ארקין","8060822","3 טען","052-7866571","TAMIARKIN1995@GMAIL.COM","מרכז","פלמחים","פלמחים","01/05/1995","24/07/2016","11/11/2020"],
-  ["אלחנן סמואל","8441910","2 תותחן","058-4934481","e.y.samuel@gmail.com","דרום","אשקלון","סנפיר 18","06/09/2002","","08/05/2025"],
-  ["מלאכי טוביה לבנברג","9021289","","052-6650809","malachi9875@gmail.com","מרכז","פתח תקווה","האר\"י הקדוש 12","05/08/2003","","08/05/2025"],
-  ["יהונתן אדלר","8855522","","058-7731614","tskr101@gmail.com","יהודה ושומרון","טלמון","היער 73","13/04/2003","","08/05/2025"],
-  ["אליה סופר","8879938","","052-5551631","eliyasofer133@gmail.com","ירושלים","ירושלים","הנורית 104","24/10/1998","","08/05/2025"],
-  ["ישי מן","8639204","","058-7962962","yshayman141141@gmail.com","צפון","קריית ים","שד ירושלים 94","23/02/2003","","08/05/2025"],
-  ["יהודה אהרון רייז","9078761","","058-7326116","yreiss123@gmail.com","יהודה ושומרון","מעלה מכמש","מעלה מכמש","12/01/2003","","08/05/2025"],
-  ["מאי רז","9074475","","050-7170179","mairaz2003@gmail.com","דרום","בני נצרים","סורק 2","23/08/2000","","08/05/2025"],
-  ["אלכסנדר טיברג","9168308","","050-5885343","aleksandertiberg@gmail.com","דרום","תלמי יחיאל","החקלאים 28","04/05/2003","","08/05/2025"],
-  ["בידרמן סהר","9124637","","052-5531235","bydrmnshr200@gmail.com","יהודה ושומרון","מעלה אדומים","מצפה נבו 48/1","21/10/2003","","08/05/2025"],
-  ["אדיר כהן","9140679","","052-3302258","adircohen87@gmail.com","מרכז","כפר סבא","לבונה 16","05/08/2003","","08/05/2025"],
-];
+async function requireAdmin() {
+  const session = await auth();
+  if (!session?.user?.email) return null;
+  const user = getUserByEmail(session.user.email);
+  if (!user || user.role !== "admin") return null;
+  return user;
+}
 
-// DELETE: Clear all soldiers (to allow re-seeding with correct data)
+// DELETE: Clear all soldiers
 export async function DELETE() {
-  try {
-    const session = await auth();
-    if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const user = getUserByEmail(session.user.email);
-    if (!user || user.role !== "admin") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const admin = await requireAdmin();
+  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  try {
     const fs = await import("fs");
     const path = await import("path");
     const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
@@ -93,53 +31,55 @@ export async function DELETE() {
     if (fs.existsSync(filePath)) {
       fs.writeFileSync(filePath, "[]", "utf-8");
     }
-    return NextResponse.json({ message: "All soldiers deleted. You can now re-seed." });
+    return NextResponse.json({ message: "All soldiers deleted." });
   } catch (err) {
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
 
-export async function POST() {
-  try {
-    const session = await auth();
-    if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const user = getUserByEmail(session.user.email);
-    if (!user || user.role !== "admin") return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+// POST: Import soldiers from CSV data sent in request body
+// Body: { rows: [["name","personalId","role","phone","email","region","city","address","birthDate","serviceEndDate","unitJoinDate"], ...] }
+export async function POST(req: NextRequest) {
+  const admin = await requireAdmin();
+  if (!admin) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const existing = getSoldiers();
-    if (existing.length > 0) {
-      return NextResponse.json({ message: `Already have ${existing.length} soldiers. Delete them first to re-seed.` });
+  try {
+    const body = await req.json();
+    const { rows } = body;
+
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return NextResponse.json({ error: "No data provided. Send { rows: [[...], ...] }" }, { status: 400 });
     }
 
-    const seen = new Set<string>();
+    const existing = getSoldiers();
+    const seen = new Set<string>(existing.map((s) => s.personalId));
     let count = 0;
 
-    for (const row of CSV_DATA) {
-      const [name, personalId, role, phone, email, region, city, address, birthDate, serviceEndDate, unitJoinDate] = row;
+    for (const row of rows) {
+      if (!Array.isArray(row) || row.length < 3) continue;
+      const [name, personalId, role, phone, email, region, city, address, birthDate, serviceEndDate, unitJoinDate] = row.map((v: unknown) => String(v || "").trim());
 
-      if (!name.trim()) continue;
-      if (personalId && seen.has(personalId)) continue;
-      if (personalId) seen.add(personalId);
+      if (!name || !personalId || seen.has(personalId)) continue;
+      seen.add(personalId);
 
       createSoldier({
-        name: name.trim(),
-        personalId: personalId.trim(),
-        role: role.trim(),
-        phone: phone.trim() || undefined,
-        email: email ? email.trim().toLowerCase().replace(/\s/g, "") : undefined,
-        region: region.trim() || undefined,
-        city: city.trim() || undefined,
-        address: address.trim() || undefined,
-        birthDate: convertDate(birthDate) || undefined,
-        serviceEndDate: convertDate(serviceEndDate) || undefined,
-        unitJoinDate: convertDate(unitJoinDate) || undefined,
+        name: name.slice(0, 100),
+        personalId: personalId.slice(0, 20),
+        role: (role || "").slice(0, 50),
+        phone: (phone || "").slice(0, 20) || undefined,
+        email: (email || "").toLowerCase().slice(0, 200) || undefined,
+        region: (region || "").slice(0, 100) || undefined,
+        city: (city || "").slice(0, 100) || undefined,
+        address: (address || "").slice(0, 200) || undefined,
+        birthDate: convertDate(birthDate || "") || undefined,
+        serviceEndDate: convertDate(serviceEndDate || "") || undefined,
+        unitJoinDate: convertDate(unitJoinDate || "") || undefined,
       });
       count++;
     }
 
-    return NextResponse.json({ message: `Seeded ${count} soldiers successfully!` });
+    return NextResponse.json({ message: `Imported ${count} soldiers successfully.` }, { status: 201 });
   } catch (err) {
-    console.error("Seed soldiers error:", err);
-    return NextResponse.json({ error: String(err) }, { status: 500 });
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }
