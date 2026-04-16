@@ -1,9 +1,12 @@
 import fs from "fs";
 import path from "path";
+import { writeToTurso, isTursoEnabled } from "./turso";
 
-// Simple JSON file-based database — no external DB needed
-// In production (Render), uses persistent disk at /opt/render/project/src/data
-// Locally, uses ./data relative to project root
+// JSON file-based database with optional Turso cloud mirror
+// Filesystem is the primary source (synchronous reads, fast).
+// If Turso is configured, every write is also mirrored to Turso (fire-and-forget).
+// On app boot, instrumentation.ts restores filesystem from Turso if available.
+// This allows running on Render Free tier (ephemeral filesystem) with persistence via Turso.
 
 const DATA_DIR = process.env.DATA_DIR || path.join(process.cwd(), "data");
 
@@ -233,7 +236,16 @@ function readJson<T>(filename: string, fallback: T): T {
 function writeJson<T>(filename: string, data: T): void {
   ensureDataDir();
   const filePath = path.join(DATA_DIR, filename);
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2), "utf-8");
+  const serialized = JSON.stringify(data, null, 2);
+  fs.writeFileSync(filePath, serialized, "utf-8");
+
+  // Mirror to Turso asynchronously (fire-and-forget)
+  // Errors are logged inside writeToTurso but not thrown here.
+  if (isTursoEnabled()) {
+    writeToTurso(filename, serialized).catch((err) => {
+      console.error(`[db] Failed to mirror ${filename} to Turso:`, err);
+    });
+  }
 }
 
 // ─── Default data ────────────────────────────────────────────────────────
